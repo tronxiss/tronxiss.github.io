@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dossier OMBRE-9 — Escape Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #2a2a32;
+      color: #d0d0d0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: #00ff4133 #2a2a32;
+    }
+    body::-webkit-scrollbar {
+      width: 10px;
+    }
+    body::-webkit-scrollbar-track {
+      background: #2a2a32;
+    }
+    body::-webkit-scrollbar-thumb {
+      background: #00ff4133;
+      border-radius: 5px;
+    }
+    body::-webkit-scrollbar-thumb:hover {
+      background: #00ff4155;
+    }
+
+    /* ===== PARTICLES CANVAS ===== */
+    #particles-bg {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* ===== SCANLINES ===== */
+    body::after {
+      content:'';
+      position:fixed; inset:0; z-index:9998; pointer-events:none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.012) 2px, rgba(0,255,65,0.012) 4px);
+    }
+
+    /* ===== GLITCH OVERLAY (for hack effect) ===== */
+    #glitch-overlay {
+      position:fixed; inset:0; z-index:10000; pointer-events:none;
+      display:none;
+    }
+    #glitch-overlay.active {
+      display:block;
+      animation: glitchScreen 0.8s steps(4) forwards;
+    }
+    @keyframes glitchScreen {
+      0%   { background: transparent; }
+      10%  { background: rgba(0,255,65,0.15); transform: translate(-2px,1px); }
+      20%  { background: rgba(255,0,64,0.1); transform: translate(2px,-1px); }
+      30%  { background: transparent; transform: translate(0,0); }
+      40%  { background: rgba(0,255,65,0.2); transform: translate(-3px,2px); }
+      50%  { background: rgba(255,0,64,0.15); transform: translate(3px,-2px); }
+      60%  { background: transparent; transform: translate(0,0); }
+      70%  { background: rgba(0,255,65,0.1); }
+      80%  { background: transparent; }
+      90%  { background: rgba(0,255,65,0.05); }
+      100% { background: transparent; display:none; }
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      position: relative; z-index:1;
+      background: linear-gradient(180deg, #2e2e36 0%, #2a2a32 100%);
+      padding: 24px 20px 16px;
+      text-align: center;
+      border-bottom: 1px solid #3a3a42;
+      overflow: hidden;
+    }
+    header::before {
+      content:'';
+      position:absolute; top:0; left:0; right:0; height:2px;
+      background: linear-gradient(90deg, transparent, #00ff41, #00ff41, transparent);
+      animation: headerGlow 3s ease-in-out infinite;
+    }
+    @keyframes headerGlow { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
+
+    .header-badge {
+      display: inline-block;
+      border: 1px solid #00ff4133;
+      background: #00ff4108;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7em;
+      color: #00ff41;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 5px #00ff4122;} 50%{box-shadow:0 0 20px #00ff4144;} }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2em;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #fff;
+      text-shadow: 0 0 30px #00ff4133;
+      margin-bottom: 4px;
+    }
+    h1 .accent { color: #00ff41; }
+    h1:hover { animation: glitchText 0.3s ease-in-out; }
+    @keyframes glitchText {
+      0%  {text-shadow:0 0 30px #00ff4133;}
+      20% {text-shadow:-2px 0 #ff0040, 2px 0 #00ff41;}
+      40% {text-shadow:2px 0 #ff0040, -2px 0 #00ff41;}
+      60% {text-shadow:-1px 0 #ff0040, 1px 0 #00ff41;}
+      80% {text-shadow:1px 0 #ff0040, -1px 0 #00ff41;}
+      100%{text-shadow:0 0 30px #00ff4133;}
+    }
+
+    header p {
+      font-family: 'Share Tech Mono', monospace;
+      color: #888;
+      font-size: 0.8em;
+      letter-spacing: 2px;
+    }
+
+    /* Agent name in header */
+    #agent-display {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75em;
+      color: #00ff41;
+      letter-spacing: 2px;
+      margin-top: 6px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    #agent-display.visible { opacity:1; }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-container {
+      position: relative; z-index:1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 30px 0;
+    }
+    .progress-bar-outer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #333340;
+      border: 1px solid #3a3a42;
+      border-radius: 12px;
+      padding: 14px 18px;
+    }
+    .progress-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72em;
+      color: #999;
+      letter-spacing: 2px;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+    .progress-track {
+      flex:1; height:6px;
+      background: #3a3a42;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-fill {
+      height:100%;
+      background: linear-gradient(90deg, #00ff41, #00cc33);
+      border-radius: 6px;
+      width: 0%;
+      transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+      box-shadow: 0 0 10px #00ff4144;
+    }
+    .progress-steps {
+      display: flex; gap: 6px;
+    }
+    .progress-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #3a3a42;
+      border: 1px solid #555;
+      transition: all 0.4s;
+    }
+    .progress-dot.done {
+      background: #00ff41;
+      border-color: #00ff41;
+      box-shadow: 0 0 8px #00ff4166;
+    }
+    .progress-dot.active {
+      border-color: #00ff41;
+      box-shadow: 0 0 8px #00ff4133;
+      animation: dotPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes dotPulse { 0%,100%{box-shadow:0 0 4px #00ff4133;} 50%{box-shadow:0 0 14px #00ff4166;} }
+
+    /* ===== MAIN ===== */
+    main {
+      position: relative; z-index:1;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 20px 80px 60px;
+      box-sizing: border-box;
+    }
+    @media (min-width:1401px) {
+      main {
+        margin-right: 0;
+        padding-right: 420px;
+      }
+    }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: #333340;
+      border: 1px solid #3a3a42;
+      border-radius: 16px;
+      padding: 36px 40px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    }
+    .card.animate-in { animation: fadeSlideIn 0.6s ease-out; }
+    .card::before {
+      content:'';
+      position:absolute; top:0; left:0; width:3px; height:100%;
+      background: linear-gradient(180deg, #00ff41, #00ff4100);
+      border-radius: 3px 0 0 3px;
+    }
+    @keyframes fadeSlideIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+
+    .card h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.15em;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card h2 .icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px;
+      background: #00ff4112;
+      border: 1px solid #00ff4133;
+      border-radius: 10px;
+      font-size: 0.95em;
+    }
+    .card p { line-height: 1.7; margin-bottom: 10px; }
+
+    /* ===== MISSION TEXT / TYPING ===== */
+    .mission-text {
+      font-family: 'Share Tech Mono', monospace;
+      background: #2a2a32;
+      border: 1px solid #3a3a42;
+      border-left: 3px solid #00ff41;
+      padding: 18px 20px;
+      border-radius: 8px;
+      color: #00ff41;
+      font-size: 0.9em;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      min-height: 70px;
+    }
+    .typing-cursor {
+      display: inline-block;
+      width: 8px; height: 15px;
+      background: #00ff41;
+      vertical-align: middle;
+      margin-left: 2px;
+      animation: blink 0.7s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.8em;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: transparent;
+      border: 2px solid #00ff41;
+      color: #00ff41;
+      padding: 13px 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .btn::before {
+      content:''; position:absolute; inset:0;
+      background: #00ff41; opacity: 0; transition: opacity 0.3s;
+    }
+    .btn:hover { color:#000; box-shadow:0 0 30px #00ff4144, 0 0 60px #00ff4122; }
+    .btn:hover::before { opacity:1; }
+    .btn span { position:relative; z-index:1; }
+    .btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .btn:disabled:hover { color:#00ff41; box-shadow:none; }
+    .btn:disabled:hover::before { opacity:0; }
+
+    .btn-secondary {
+      border-color: #555;
+      color: #999;
+      padding: 10px 20px;
+      font-size: 0.7em;
+    }
+    .btn-secondary::before { background: #3a3a42; }
+    .btn-secondary:hover { color: #ccc; border-color: #555; box-shadow: 0 0 15px rgba(255,255,255,0.05); }
+
+    /* ===== HINT SYSTEM ===== */
+    .hint-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: #2a2a32;
+      border: 1px solid #3a3a42;
+      border-radius: 10px;
+    }
+    .hint-dots {
+      display: flex; gap: 5px;
+    }
+    .hint-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #00ff41;
+      transition: all 0.3s;
+      box-shadow: 0 0 6px #00ff4144;
+    }
+    .hint-dot.used {
+      background: #333;
+      box-shadow: none;
+    }
+    .hint-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8em;
+      color: #00ff41;
+      opacity: 0;
+      transition: opacity 0.4s;
+      flex: 1;
+    }
+    .hint-text.visible { opacity:1; }
+    .hint-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65em;
+      color: #777;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+
+
+    /* ===== INPUT ===== */
+    .input-group { margin-top:20px; }
+    .input-group label {
+      font-family:'Share Tech Mono',monospace; font-size:0.75em;
+      color:#999; text-transform:uppercase; letter-spacing:2px;
+      display:block; margin-bottom:10px;
+    }
+    .input-row { display:flex; gap:10px; }
+    .input {
+      flex:1; padding:13px 18px; border-radius:10px;
+      border:1px solid #444; background:#2a2a32;
+      color:#00ff41; font-family:'Share Tech Mono',monospace;
+      font-size:1em; letter-spacing:1px; outline:none;
+      transition:all 0.3s;
+    }
+    .input::placeholder { color:#666; }
+    .input:focus { border-color:#00ff4155; box-shadow:0 0 20px #00ff4111; }
+
+    .result-msg {
+      margin-top:14px; font-family:'Share Tech Mono',monospace;
+      font-size:0.85em; min-height:1.2em;
+    }
+    .result-msg.error { color:#ff4444; text-shadow:0 0 10px #ff444433; }
+    .result-msg.success-msg { color:#00ff41; }
+
+    /* ===== SUCCESS EFFECT ===== */
+    .card.success-flash {
+      border-color: #00ff41 !important;
+      box-shadow: 0 0 40px #00ff4133, 0 0 80px #00ff4118, inset 0 0 60px #00ff4108 !important;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .card.success-flash::before {
+      background: linear-gradient(180deg, #00ff41, #00ff4100) !important;
+      width: 4px !important;
+    }
+    .success-overlay {
+      position: fixed; inset: 0; z-index: 10001; pointer-events: none;
+      animation: successFlash 1.2s ease-out forwards;
+    }
+    @keyframes successFlash {
+      0%   { background: rgba(0,255,65,0.25); }
+      30%  { background: rgba(0,255,65,0.08); }
+      100% { background: transparent; }
+    }
+    .success-particle {
+      position: fixed; z-index: 10002; pointer-events: none;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #00ff41;
+      box-shadow: 0 0 8px #00ff41;
+    }
+    .result-msg.success-msg.typing-result {
+      overflow: hidden;
+      border-right: 2px solid #00ff41;
+      white-space: nowrap;
+      animation: resultBlink 0.5s step-end infinite;
+    }
+    @keyframes resultBlink { 0%,100%{border-color:#00ff41;} 50%{border-color:transparent;} }
+    .input.input-success {
+      border-color: #00ff41 !important;
+      box-shadow: 0 0 25px #00ff4133 !important;
+      color: #00ff41;
+    }
+
+    /* ===== SUCCESS SECTION ===== */
+    .success-icon { text-align:center; font-size:3.5em; margin-bottom:10px; animation:successPop 0.6s cubic-bezier(0.175,0.885,0.32,1.275); }
+    @keyframes successPop { from{transform:scale(0);} to{transform:scale(1);} }
+    .success-rule {
+      background:#00ff4108; border:1px solid #00ff4122;
+      border-radius:10px; padding:18px; margin:18px 0; text-align:center;
+    }
+    .success-rule p {
+      font-family:'Orbitron',sans-serif; font-size:0.9em;
+      color:#00ff41; line-height:1.6;
+    }
+    .btn-next {
+      display:block; margin:20px auto 0; text-align:center;
+    }
+
+    /* ===== NAME INPUT SECTION ===== */
+    .name-section {
+      text-align:center;
+    }
+    .name-section .input {
+      max-width: 340px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+
+
+    /* ===== FINAL SCREEN ===== */
+    .final-summary {
+      text-align: center;
+    }
+    .final-score {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5em;
+      font-weight: 900;
+      color: #00ff41;
+      text-shadow: 0 0 40px #00ff4144;
+      margin: 16px 0;
+    }
+    .final-rules {
+      text-align: left;
+      margin: 20px 0;
+    }
+    .final-rules li {
+      padding: 10px 16px;
+      margin-bottom: 8px;
+      background: #2a2a32;
+      border: 1px solid #3a3a42;
+      border-radius: 8px;
+      font-size: 0.88em;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .final-rules li .rule-icon {
+      color: #00ff41;
+      font-size: 1.1em;
+    }
+
+    /* ===== HIDDEN ===== */
+    .hidden { display:none; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      position:relative; z-index:1;
+      text-align:center; padding:20px;
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.7em; color:#777;
+      letter-spacing:2px; border-top:1px solid #3a3a42;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width:1400px) {
+      main {
+        padding-right: 30px;
+      }
+    }
+    @media (max-width:900px) {
+      main {
+        padding-right: 30px;
+        max-width: 100%;
+      }
+    }
+    @media (max-width:600px) {
+      h1 { font-size:1.3em; letter-spacing:2px; }
+      .card { padding:20px 16px; }
+      .input-row { flex-direction:column; }
+      .progress-bar-outer { flex-wrap:wrap; }
+      main {
+        padding: 20px 16px 60px;
+        padding-right: 16px;
+      }
+    }
+
+    /* ===== LOADER ===== */
+    #loader {
+      position:fixed; inset:0; z-index:9999;
+      background:#2a2a32;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      transition: opacity 0.5s;
+    }
+    #loader.fade-out { opacity:0; pointer-events:none; }
+    .loader-text {
+      font-family:'Share Tech Mono',monospace;
+      color:#00ff41; font-size:0.9em;
+      letter-spacing:3px; margin-bottom:20px;
+    }
+    .loader-bar { width:200px; height:3px; background:#3a3a42; border-radius:3px; overflow:hidden; }
+    .loader-bar-fill {
+      width:0%; height:100%; background:#00ff41;
+      border-radius:3px; animation:loadBar 2s ease-in-out forwards;
+    }
+    @keyframes loadBar { 0%{width:0%;} 60%{width:70%;} 100%{width:100%;} }
+
+    /* ===== SHAKE ===== */
+    @keyframes shake {
+      0%,100%{transform:translateX(0);}
+      20%{transform:translateX(-8px);}
+      40%{transform:translateX(8px);}
+      60%{transform:translateX(-4px);}
+      80%{transform:translateX(4px);}
+    }
+
+    /* ===== AMBIENT GRID OVERLAY ===== */
+    .ambient-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,255,65,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,65,0.06) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* ===== EDGE LINES ===== */
+    .edge-line {
+      position: fixed; top: 0; bottom: 0; width: 3px;
+      z-index: 2; pointer-events: none;
+    }
+    .edge-line-left  { left: 0;  background: linear-gradient(180deg, transparent 5%, #00ff4160 30%, #00ff4135 50%, #00ff4160 70%, transparent 95%); }
+    .edge-line-right { right: 0; background: linear-gradient(180deg, transparent 5%, #00ff4160 30%, #00ff4135 50%, #00ff4160 70%, transparent 95%); }
+
+    /* ===== SIDE PANELS ===== */
+    .side-panel {
+      position: fixed; top: 0; bottom: 0; width: 320px;
+      z-index: 1; pointer-events: none; overflow: hidden;
+    }
+    .side-panel-left  { left: 0; }
+    .side-panel-right { right: 0; }
+    @media (max-width:1400px) {
+      .side-panel-right {
+        width: 280px;
+      }
+    }
+    @media (max-width:900px) {
+      .side-panel {
+        display: none !important;
+      }
+    }
+
+    /* Binary rain */
+    .binary-rain { position: absolute; inset: 0; overflow: hidden; }
+    .bin-col {
+      position: absolute;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.1em;
+      color: #00ff41;
+      writing-mode: vertical-rl;
+      white-space: nowrap;
+      letter-spacing: 3px;
+      user-select: none;
+      animation: binScroll linear infinite;
+    }
+    @keyframes binScroll {
+      0%   { transform: translateY(-50%); }
+      100% { transform: translateY(0); }
+    }
+
+    /* System status */
+    .sys-status { position: absolute; top: 80px; left: 18px; z-index: 2; }
+    .sys-line {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85em; color: #00ff41aa;
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+    .sys-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .sys-dot.green { background: #00ff41; box-shadow: 0 0 12px #00ff41; animation: sysPulse 3s ease-in-out infinite; }
+    .sys-dot.amber { background: #ffaa00; box-shadow: 0 0 12px #ffaa00; animation: sysPulse 2s ease-in-out 0.5s infinite; }
+    .sys-dot.red   { background: #ff4444; box-shadow: 0 0 12px #ff4444; animation: sysPulse 1.5s ease-in-out 1s infinite; }
+    @keyframes sysPulse {
+      0%,100% { opacity: 0.5; }
+      50%     { opacity: 1; }
+    }
+
+    /* Network log */
+    .net-log {
+      position: absolute; top: 240px; right: 8px;
+      width: 320px; max-height: calc(100vh - 300px); overflow: auto;
+      padding-right: 6px;
+    }
+    .net-log::-webkit-scrollbar {
+      width: 12px;
+    }
+    .net-log::-webkit-scrollbar-track {
+      background: #2a2a32;
+      border-radius: 6px;
+    }
+    .net-log::-webkit-scrollbar-thumb {
+      background: #00ff4155;
+      border-radius: 6px;
+      border: 2px solid #2a2a32;
+    }
+    .net-log::-webkit-scrollbar-thumb:hover {
+      background: #00ff4177;
+    }
+    @media (max-width:1400px) {
+      .net-log {
+        width: 280px;
+        font-size: 0.95em;
+      }
+    }
+    @media (max-width:1200px) {
+      .side-panel-right {
+        width: 260px !important;
+      }
+      .net-log {
+        width: 220px;
+      }
+    }
+    @media (max-width:900px) {
+      .side-panel-right {
+        display: none !important;
+      }
+    }
+    .net-log-head {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1em; color: #00ff41bb; letter-spacing: 3px;
+      text-transform: uppercase; margin-bottom: 12px;
+      padding-bottom: 8px; border-bottom: 2px solid #00ff4166;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .net-log-head .blink-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #00ff41; box-shadow: 0 0 12px #00ff41;
+      animation: sysPulse 1.5s ease-in-out infinite;
+    }
+    .net-entry {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.9em; color: #00ff4199; margin-bottom: 8px;
+      line-height: 1.6; animation: entrySlide 0.5s ease-out;
+      word-break: break-all;
+    }
+    .net-entry.warn   { color: #ffaa0099; }
+    .net-entry.danger  { color: #ff444499; }
+    @keyframes entrySlide {
+      from { opacity: 0; transform: translateX(8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Signal bars */
+    .signal-bars {
+      position: fixed; bottom: 18px; right: 22px;
+      display: flex; align-items: flex-end; gap: 3px;
+      z-index: 3; pointer-events: none;
+    }
+    .signal-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.55em; color: #00ff4180;
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-right: 8px; align-self: flex-end;
+    }
+    .sig-bar {
+      width: 5px; background: #00ff41; border-radius: 1px;
+      box-shadow: 0 0 6px #00ff4155;
+      animation: sigPulse 2.5s ease-in-out infinite;
+    }
+    .sig-bar:nth-child(1) { height: 8px;  animation-delay: 0s; }
+    .sig-bar:nth-child(2) { height: 14px; animation-delay: 0.12s; }
+    .sig-bar:nth-child(3) { height: 20px; animation-delay: 0.24s; }
+    .sig-bar:nth-child(4) { height: 26px; animation-delay: 0.36s; }
+    .sig-bar:nth-child(5) { height: 32px; animation-delay: 0.48s; }
+    @keyframes sigPulse {
+      0%,100% { opacity: 0.35; }
+      50%     { opacity: 0.8; }
+    }
+
+    /* ===== CORNER BRACKETS ===== */
+    .c-bracket {
+      position: fixed; width: 35px; height: 35px;
+      z-index: 2; pointer-events: none;
+    }
+    .c-bracket::before, .c-bracket::after {
+      content: ''; position: absolute; background: #00ff4166;
+    }
+    .c-bracket { width: 55px; height: 55px; }
+    .c-bracket.tl { top:10px; left:10px; }
+    .c-bracket.tl::before { top:0;left:0;width:40px;height:2px; }
+    .c-bracket.tl::after  { top:0;left:0;width:2px;height:40px; }
+    .c-bracket.tr { top:10px; right:10px; }
+    .c-bracket.tr::before { top:0;right:0;width:40px;height:2px; }
+    .c-bracket.tr::after  { top:0;right:0;width:2px;height:40px; }
+    .c-bracket.bl { bottom:10px; left:10px; }
+    .c-bracket.bl::before { bottom:0;left:0;width:40px;height:2px; }
+    .c-bracket.bl::after  { bottom:0;left:0;width:2px;height:40px; }
+    .c-bracket.br { bottom:10px; right:10px; }
+    .c-bracket.br::before { bottom:0;right:0;width:40px;height:2px; }
+    .c-bracket.br::after  { bottom:0;right:0;width:2px;height:40px; }
+
+    /* ===== RADAR ===== */
+    .radar-unit {
+      position: fixed; bottom: 30px; left: 25px;
+      width: 150px; height: 150px;
+      z-index: 2; pointer-events: none; opacity: 0.5;
+    }
+    .radar-ring {
+      position: absolute; border: 2px solid #00ff41; border-radius: 50%;
+    }
+    .radar-ring-1 { inset: 0; }
+    .radar-ring-2 { inset: 25px; }
+    .radar-ring-3 { inset: 50px; }
+    .radar-axis { position: absolute; background: #00ff4166; }
+    .radar-axis-h { top:50%;left:0;right:0;height:1px; }
+    .radar-axis-v { left:50%;top:0;bottom:0;width:1px; }
+    .radar-arm {
+      position: absolute; top: 50%; left: 50%;
+      width: 50%; height: 2px;
+      transform-origin: left center;
+      background: linear-gradient(90deg, #00ff41cc, transparent);
+      animation: armSweep 5s linear infinite;
+    }
+    @keyframes armSweep { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+    .radar-pip {
+      position: absolute; width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .radar-pip-1 { top:20%;left:65%; background:#ff4444; box-shadow:0 0 20px #ff4444, 0 0 40px #ff444466; animation:pipBlink 5s ease infinite; }
+    .radar-pip-2 { top:72%;left:28%; background:#ffaa00; box-shadow:0 0 20px #ffaa00, 0 0 40px #ffaa0066; animation:pipBlink 5s ease 2s infinite; }
+    .radar-pip-3 { top:38%;left:78%; background:#4488ff; box-shadow:0 0 20px #4488ff, 0 0 40px #4488ff66; animation:pipBlink 5s ease 3.5s infinite; }
+    @keyframes pipBlink {
+      0%,65%,100% { opacity:0; }
+      70% { opacity:1; }
+      85% { opacity:0.8; }
+      95% { opacity:0.5; }
+    }
+
+    /* ===== SCAN BEAM (disabled) ===== */
+    .scan-beam {
+      display: none;
+    }
+
+    /* ===== FLOATING DATA ===== */
+    .data-float {
+      position: fixed;
+      font-family: 'Share Tech Mono', monospace;
+      color: #00ff41; pointer-events: none;
+      z-index: 0; white-space: nowrap; font-size: 0.55em;
+    }
+
+    /* ===== VERTICAL LABELS ===== */
+    .vert-label {
+      position: fixed; z-index: 2; pointer-events: none;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65em; letter-spacing: 5px;
+      color: #00ff4160; writing-mode: vertical-rl;
+      text-transform: uppercase;
+    }
+    .vert-label-left  { left: 10px; top: 50%; transform: translateY(-50%); }
+    .vert-label-right { right: 10px; top: 50%; transform: translateY(-50%); }
+
+    /* ===== HIDE AMBIENT ON SMALL SCREENS ===== */
+    @media (max-width:1350px) {
+      .side-panel, .radar-unit, .signal-bars, .sys-status, .vert-label { display:none; }
+    }
+    @media (max-width:900px) {
+      .c-bracket, .scan-beam, .data-float, .edge-line, .ambient-grid { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-text">INITIALISATION SYSTÈME...</div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<!-- Glitch overlay -->
+<div id="glitch-overlay"></div>
+
+<!-- Particles -->
+<canvas id="particles-bg"></canvas>
+
+<!-- HEADER -->
+<header>
+  <div class="header-badge">// classifié - accès restreint</div>
+  <h1>DOSSIER <span class="accent">OMBRE-9</span></h1>
+  <p>[ cellule d'investigation numérique ]</p>
+  <div id="agent-display"></div>
+</header>
+
+<!-- PROGRESS BAR -->
+<div class="progress-container hidden" id="progress-section">
+  <div class="progress-bar-outer">
+    <span class="progress-label">Progression</span>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-steps">
+      <div class="progress-dot" id="dot-1"></div>
+      <div class="progress-dot" id="dot-2"></div>
+      <div class="progress-dot" id="dot-3"></div>
+      <div class="progress-dot" id="dot-4"></div>
+      <div class="progress-dot" id="dot-5"></div>
+      <div class="progress-dot" id="dot-6"></div>
+    </div>
+    <span class="progress-label" id="progress-text">0 / 6</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- ====== STEP 0 : NOM DE CODE ====== -->
+  <section class="card animate-in" id="step-name">
+    <h2><span class="icon">&#x1F575;</span> Identification requise</h2>
+    <div class="name-section">
+      <p style="margin-bottom:16px; color:#888;">Avant de commencer, choisissez votre <strong style="color:#fff;">nom de code</strong> d'agent :</p>
+      <input class="input" id="agent-name" placeholder="Ex : Shadow, Cipher, Neo..." autocomplete="off" spellcheck="false" maxlength="20">
+      <br>
+      <button class="btn" onclick="setAgentName()" id="btn-name"><span>Confirmer l'identité</span></button>
+    </div>
+  </section>
+
+  <!-- ====== STEP 1 : INTRO / MISSION BRIEFING ====== -->
+  <section class="card hidden" id="step-intro">
+    <h2><span class="icon">&#x1F4E1;</span> Transmission entrante</h2>
+    <div class="mission-text" id="typing-target">
+      <span class="typing-cursor" id="typing-cursor"></span>
+    </div>
+    <p style="color:#555; font-size:0.85em; margin-bottom:18px;" id="intro-warning" class="hidden">&#9888; Cette opération est confidentielle. Ne partagez pas ces informations.</p>
+    <button class="btn hidden" onclick="startEnigme(1)" id="btn-start"><span>Accepter la mission</span></button>
+  </section>
+
+  <!-- ====== ENIGME 1 : La source ====== -->
+  <section class="card hidden" id="enigme-1">
+    <h2><span class="icon">&#x1F9EC;</span> Énigme 1/6 — Faux posts</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 a publié un faux post sur les réseaux sociaux. Ce post utilise des photos qui ne correspondent pas à ce qu'il prétend montrer. Analysez les images et les informations du document pour retrouver <strong style="color:#00ff41;">d'où viennent réellement ces images</strong> <strong style="color:#00ff41;"></strong>.</p>
+    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Téléchargez et consultez le <strong style="color:#aaa;">Document PDF</strong> pour résoudre cette énigme.</p>
+
+    <button class="btn" onclick="openDocument('enigme1.pdf')" style="margin: 15px 0;"><span>📄 Charger le Document 1</span></button>
+
+    <div class="input-group">
+      <label>// entrez le code identifié :</label>
+      <div class="input-row">
+        <input class="input" id="code-1" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkEnigme1()"><span>Valider</span></button>
+      </div>
+    </div>
+
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint(1)"><span>&#x1F4A1; Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint(1)"><span>&#x2B05; Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-1-1"></div>
+        <div class="hint-dot" id="hint-dot-1-2"></div>
+        <div class="hint-dot" id="hint-dot-1-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-1"></div>
+    </div>
+
+    <p class="result-msg" id="result-1"></p>
+  </section>
+
+  <!-- ====== SUCCESS 1 ====== -->
+  <section class="card hidden" id="success-1">
+    <div class="success-icon">&#x1F513;</div>
+    <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 1 résolue</h2>
+    <p style="text-align:center; color:#888;">Signature identifiée : <strong style="color:#00ff41;">O9</strong></p>
+    <div class="success-rule">
+      <p>&#x1F50D; Règle n&deg;1 : Toujours remonter à la source originale, jamais se fier aux simples partages.</p>
+    </div>
+    <button class="btn btn-next" onclick="startEnigme(2)"><span>Énigme suivante &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== ENIGME 2 : Manipulation d'image ====== -->
+  <section class="card hidden" id="enigme-2">
+    <h2><span class="icon">&#x1F5BC;</span> Énigme 2/6 — Propagande visuelle</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise des images manipulées pour susciter la peur. Identifiez l'image truquée.</p>
+    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 2</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+
+    <div class="input-group">
+      <label>// entrez le code découvert :</label>
+      <div class="input-row">
+        <input class="input" id="code-2" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkEnigme2()"><span>Valider</span></button>
+      </div>
+    </div>
+
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint(2)"><span>&#x1F4A1; Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint(2)"><span>&#x2B05; Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-2-1"></div>
+        <div class="hint-dot" id="hint-dot-2-2"></div>
+        <div class="hint-dot" id="hint-dot-2-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-2"></div>
+    </div>
+
+    <p class="result-msg" id="result-2"></p>
+  </section>
+
+  <!-- ====== SUCCESS 2 ====== -->
+  <section class="card hidden" id="success-2">
+    <div class="success-icon">&#x1F513;</div>
+    <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 2 résolue</h2>
+    <p style="text-align:center; color:#888;">Image truquée identifiée : <strong style="color:#00ff41;">Image B</strong> - Le graphique sans source</p>
+    <div class="success-rule">
+      <p>&#x1F5BC; Règle n&deg;2 : Une image sans source, sans contexte et qui joue sur les émotions est probablement manipulée.</p>
+    </div>
+    <button class="btn btn-next" onclick="startEnigme(3)"><span>Énigme suivante &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== ENIGME 3 : Bots et faux comptes ====== -->
+  <section class="card hidden" id="enigme-3">
+    <h2><span class="icon">&#x1F916;</span> Énigme 3/6 — Les faux comptes</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise des bots pour amplifier ses messages. Analysez la conversation et identifiez les signes suspects.</p>
+    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 3</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+
+    <div class="input-group">
+      <label>// entrez le code découvert :</label>
+      <div class="input-row">
+        <input class="input" id="code-3" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkEnigme3()"><span>Valider</span></button>
+      </div>
+    </div>
+
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint(3)"><span>&#x1F4A1; Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint(3)"><span>&#x2B05; Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-3-1"></div>
+        <div class="hint-dot" id="hint-dot-3-2"></div>
+        <div class="hint-dot" id="hint-dot-3-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-3"></div>
+    </div>
+
+    <p class="result-msg" id="result-3"></p>
+  </section>
+
+  <!-- ====== SUCCESS 3 ====== -->
+  <section class="card hidden" id="success-3">
+    <div class="success-icon">&#x1F513;</div>
+    <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 3 résolue</h2>
+    <p style="text-align:center; color:#888;">Réseau de bots identifié avec succès</p>
+    <div class="success-rule">
+      <p>&#x1F916; Règle n&deg;3 : Méfie-toi des comptes qui répètent le même message, ont des noms aléatoires et publient en même temps.</p>
+    </div>
+    <button class="btn btn-next" onclick="startEnigme(4)"><span>Énigme suivante &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== ENIGME 4 : Profil suspect ====== -->
+  <section class="card hidden" id="enigme-4">
+    <h2><span class="icon">&#x1F464;</span> Énigme 4/6 — Le profil suspect</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise de faux profils générés par IA pour infiltrer les réseaux sociaux. Identifiez le faux profil et ses anomalies.</p>
+    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 4</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+
+    <div class="input-group">
+      <label>// entrez le code découvert :</label>
+      <div class="input-row">
+        <input class="input" id="code-4" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkEnigme4()"><span>Valider</span></button>
+      </div>
+    </div>
+
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint(4)"><span>&#x1F4A1; Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint(4)"><span>&#x2B05; Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-4-1"></div>
+        <div class="hint-dot" id="hint-dot-4-2"></div>
+        <div class="hint-dot" id="hint-dot-4-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-4"></div>
+    </div>
+
+    <p class="result-msg" id="result-4"></p>
+  </section>
+
+  <!-- ====== SUCCESS 4 ====== -->
+  <section class="card hidden" id="success-4">
+    <div class="success-icon">&#x1F513;</div>
+    <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 4 résolue</h2>
+    <p style="text-align:center; color:#888;">Faux profil identifié : <strong style="color:#00ff41;">Profil D</strong> — 3 anomalies détectées</p>
+    <div class="success-rule">
+      <p>&#x1F464; Règle n&deg;4 : Un profil avec une photo trop parfaite, une bio incohérente et un historique suspect est probablement faux.</p>
+    </div>
+    <button class="btn btn-next" onclick="startEnigme(5)"><span>Énigme suivante &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== ENIGME 5 : Le hoax ====== -->
+  <section class="card hidden" id="enigme-5">
+    <h2><span class="icon">&#x1F4E9;</span> Énigme 5/6 — La chaîne virale</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 diffuse des hoax par chaînes de messages. Identifiez les signaux d'alerte et trouvez le code caché.</p>
+    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 5</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+
+    <div class="input-group">
+      <label>// entrez le code découvert :</label>
+      <div class="input-row">
+        <input class="input" id="code-5" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkEnigme5()"><span>Valider</span></button>
+      </div>
+    </div>
+
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint(5)"><span>&#x1F4A1; Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint(5)"><span>&#x2B05; Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-5-1"></div>
+        <div class="hint-dot" id="hint-dot-5-2"></div>
+        <div class="hint-dot" id="hint-dot-5-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-5"></div>
+    </div>
+
+    <p class="result-msg" id="result-5"></p>
+  </section>
+
+  <!-- ====== SUCCESS 5 ====== -->
+  <section class="card hidden" id="success-5">
+    <div class="success-icon">&#x1F513;</div>
+    <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 5 résolue</h2>
+    <p style="text-align:center; color:#888;">Hoax neutralisé : <strong style="color:#00ff41;">3 signaux d'alerte</strong> identifiés</p>
+    <div class="success-rule">
+      <p>&#x1F4E9; Règle n&deg;5 : Un message qui te demande de &laquo; partager absolument &raquo; et crée l'urgence est presque toujours un hoax.</p>
+    </div>
+    <button class="btn btn-next" onclick="startEnigme(6)"><span>Énigme suivante &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== ENIGME 6 : Canular / Satire ====== -->
+  <section class="card hidden" id="enigme-6">
+    <h2><span class="icon">&#x1F921;</span> Énigme 6/6 — Satire ou réalité ?</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> Certains articles semblent vrais mais viennent de sites satiriques. D'autres semblent faux mais sont réels. Saurez-vous faire la différence ?</p>
+    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 6</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+
+    <div class="input-group">
+      <label>// entrez le code découvert :</label>
+      <div class="input-row">
+        <input class="input" id="code-6" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkEnigme6()"><span>Valider</span></button>
+      </div>
+    </div>
+
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint(6)"><span>&#x1F4A1; Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint(6)"><span>&#x2B05; Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-6-1"></div>
+        <div class="hint-dot" id="hint-dot-6-2"></div>
+        <div class="hint-dot" id="hint-dot-6-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-6"></div>
+    </div>
+
+    <p class="result-msg" id="result-6"></p>
+  </section>
+
+  <!-- ====== SUCCESS 6 ====== -->
+  <section class="card hidden" id="success-6">
+    <div class="success-icon">&#x1F513;</div>
+    <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 6 résolue</h2>
+    <p style="text-align:center; color:#888;">Articles satiriques identifiés : <strong style="color:#00ff41;">A et C</strong></p>
+    <div class="success-rule">
+      <p>&#x1F921; Règle n&deg;6 : Toujours vérifier le nom du site. Un site satirique (Le Gorafi, Nordpresse...) n'est pas une source d'information fiable.</p>
+    </div>
+    <button class="btn btn-next" onclick="showFinal()"><span>Voir le rapport final &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== FINAL SCREEN ====== -->
+  <section class="card hidden" id="final-screen">
+    <div class="final-summary">
+      <div class="success-icon">&#x1F3C6;</div>
+      <h2 style="justify-content:center;">MISSION ACCOMPLIE</h2>
+      <p style="color:#888;">Agent <strong style="color:#00ff41;" id="final-agent-name"></strong>, vous avez démantelé le réseau OMBRE-9.</p>
+      <div class="final-score" id="final-score">6 / 6</div>
+      <p style="color:#555; font-size:0.85em;">Énigmes résolues</p>
+    </div>
+    <div class="final-rules">
+      <ul style="padding:0;">
+        <li><span class="rule-icon">&#x1F50D;</span> Toujours vérifier la source originale d'une information</li>
+        <li><span class="rule-icon">&#x1F5BC;</span> Se méfier des images sans contexte qui jouent sur les émotions</li>
+        <li><span class="rule-icon">&#x1F916;</span> Repérer les bots : messages identiques, noms aléatoires, timing suspect</li>
+        <li><span class="rule-icon">&#x1F464;</span> Un profil trop parfait avec une bio incohérente est probablement faux</li>
+        <li><span class="rule-icon">&#x1F4E9;</span> Un message qui crée l'urgence et demande de partager est un hoax</li>
+        <li><span class="rule-icon">&#x1F921;</span> Vérifier le site : les sites satiriques ne sont pas des sources fiables</li>
+      </ul>
+    </div>
+    <p style="text-align:center; color:#00ff41; font-family:'Share Tech Mono',monospace; font-size:0.85em; margin-top:16px;">
+      // DOSSIER OMBRE-9 CLÔTURÉ // BIEN JOUÉ AGENT //
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  [ DOSSIER OMBRE-9 - PROTOTYPE PÉDAGOGIQUE - 2026 ]
+</footer>
+
+<!-- ===== AMBIENT DECORATIONS ===== -->
+<div class="ambient-grid"></div>
+<div class="edge-line edge-line-left"></div>
+<div class="edge-line edge-line-right"></div>
+
+<!-- Corner brackets -->
+<div class="c-bracket tl"></div>
+<div class="c-bracket tr"></div>
+<div class="c-bracket bl"></div>
+<div class="c-bracket br"></div>
+
+<!-- Scan beam -->
+<div class="scan-beam"></div>
+
+<!-- Vertical labels -->
+<div class="vert-label vert-label-left">système opérationnel — ombre-9</div>
+<div class="vert-label vert-label-right">cellule investigation — niveau 4</div>
+
+<!-- Left side panel -->
+<div class="side-panel side-panel-left">
+  <div class="binary-rain" id="binary-rain"></div>
+  <div class="sys-status">
+    <div class="sys-line"><div class="sys-dot green"></div> Réseau</div>
+    <div class="sys-line"><div class="sys-dot green"></div> Chiffrement</div>
+    <div class="sys-line"><div class="sys-dot amber"></div> Pare-feu</div>
+    <div class="sys-line"><div class="sys-dot green"></div> VPN</div>
+    <div class="sys-line"><div class="sys-dot red"></div> Menace</div>
+  </div>
+</div>
+
+<!-- Right side panel -->
+<div class="side-panel side-panel-right">
+  <div class="net-log">
+    <div class="net-log-head"><div class="blink-dot"></div> Flux réseau</div>
+    <div id="net-log-entries"></div>
+  </div>
+  <div class="signal-bars">
+    <div class="sig-bar"></div>
+    <div class="sig-bar"></div>
+    <div class="sig-bar"></div>
+    <div class="sig-bar"></div>
+    <div class="sig-bar"></div>
+  </div>
+</div>
+
+<!-- Signal bars (bottom right) -->
+<div class="signal-bars">
+  <span class="signal-label">Signal</span>
+  <div class="sig-bar"></div>
+  <div class="sig-bar"></div>
+  <div class="sig-bar"></div>
+  <div class="sig-bar"></div>
+  <div class="sig-bar"></div>
+</div>
+
+<!-- Radar -->
+<div class="radar-unit">
+  <div class="radar-ring radar-ring-1"></div>
+  <div class="radar-ring radar-ring-2"></div>
+  <div class="radar-ring radar-ring-3"></div>
+  <div class="radar-axis radar-axis-h"></div>
+  <div class="radar-axis radar-axis-v"></div>
+  <div class="radar-arm"></div>
+  <div class="radar-pip radar-pip-1"></div>
+  <div class="radar-pip radar-pip-2"></div>
+  <div class="radar-pip radar-pip-3"></div>
+</div>
+
+<script>
+// ==========================================
+// STATE
+// ==========================================
+var agentName = '';
+var currentEnigme = 0;
+var hintsUsed = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+
+var hints = {
+  1: [
+    'Les images du post montrent-elles vraiment ce que le texte prétend ? Cherchez des indices visuels.',
+    'Regardez bien les pancartes et les inscriptions sur les photos. Dans quelle langue sont-elles écrites ?',
+    'Ces images viennent d\'un autre pays. Le code est le nom de ce pays.'
+  ],
+  2: [
+    'Observez bien les documents papier : qu\'est-ce qui manque dans l\'image suspecte ?',
+    'Une image de propagande n\'a généralement pas de source ni d\'axe.',
+    'Le code combine le mot FAKE, la lettre de l\'image et un nombre caché dans le document.'
+  ],
+  3: [
+    'Comptez les comptes qui répètent exactement le même message.',
+    'Quel mot revient dans TOUS les messages des bots ?',
+    'Le code est : BOT - nombre de bots - le mot répété en majuscules.'
+  ],
+  4: [
+    'Comparez les 4 profils : lequel a une bio qui ne correspond pas à sa photo ?',
+    'Les photos générées par IA ont souvent des détails étranges (oreilles, arrière-plan flou).',
+    'Le profil D a 3 anomalies. Le code est DEEP suivi de la lettre et du nombre.'
+  ],
+  5: [
+    'Quels sont les 3 signaux typiques d\'un hoax dans ce message ?',
+    'Urgence + pas de source + « Partagez ! » = hoax.',
+    'Le code combine HOAX, le nombre de signaux et le mot clé du message.'
+  ],
+  6: [
+    'Vérifiez le nom des sites : un d\'entre eux est connu pour être satirique.',
+    'Le Gorafi et Nordpresse sont des sites de satire, pas d\'information.',
+    'Les articles A et C sont satiriques. Le code est SATIRE suivi des lettres.'
+  ]
+};
+
+// ==========================================
+// LOADER
+// ==========================================
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var loader = document.getElementById('loader');
+    loader.classList.add('fade-out');
+    setTimeout(function() { loader.style.display = 'none'; }, 500);
+  }, 2200);
+});
+
+// ==========================================
+// PARTICLES
+// ==========================================
+(function() {
+  var canvas = document.getElementById('particles-bg');
+  var ctx = canvas.getContext('2d');
+  var particles = [];
+  var PARTICLE_COUNT = 60;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (var i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      size: Math.random() * 2 + 0.5,
+      opacity: Math.random() * 0.4 + 0.1
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 255, 65, ' + p.opacity + ')';
+      ctx.fill();
+    }
+
+    // Draw connections
+    for (var i = 0; i < particles.length; i++) {
+      for (var j = i + 1; j < particles.length; j++) {
+        var dx = particles[i].x - particles[j].x;
+        var dy = particles[i].y - particles[j].y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = 'rgba(0, 255, 65, ' + (0.06 * (1 - dist / 120)) + ')';
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ==========================================
+// DOCUMENT LOADER
+// ==========================================
+function openDocument(filename) {
+  // Ouvre le PDF dans une nouvelle fenêtre ou un nouvel onglet
+  window.open(filename, '_blank');
+}
+
+// ==========================================
+// AGENT NAME
+// ==========================================
+function setAgentName() {
+  var nameInput = document.getElementById('agent-name');
+  var name = nameInput.value.trim();
+  if (!name) {
+    nameInput.style.animation = 'none';
+    nameInput.offsetHeight;
+    nameInput.style.animation = 'shake 0.4s ease';
+    return;
+  }
+  agentName = name.toUpperCase();
+
+  var display = document.getElementById('agent-display');
+  display.textContent = '[ Agent : ' + agentName + ' ]';
+  display.classList.add('visible');
+
+  transitionTo('step-name', 'step-intro');
+  setTimeout(startTyping, 600);
+}
+
+// Enter on name input
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    var nameSection = document.getElementById('step-name');
+    if (!nameSection.classList.contains('hidden')) {
+      setAgentName();
+      return;
+    }
+    if (currentEnigme === 1 && !document.getElementById('enigme-1').classList.contains('hidden')) {
+      checkEnigme1();
+    }
+    if (currentEnigme === 2 && !document.getElementById('enigme-2').classList.contains('hidden')) {
+      checkEnigme2();
+    }
+    if (currentEnigme === 3 && !document.getElementById('enigme-3').classList.contains('hidden')) {
+      checkEnigme3();
+    }
+    if (currentEnigme === 4 && !document.getElementById('enigme-4').classList.contains('hidden')) {
+      checkEnigme4();
+    }
+    if (currentEnigme === 5 && !document.getElementById('enigme-5').classList.contains('hidden')) {
+      checkEnigme5();
+    }
+    if (currentEnigme === 6 && !document.getElementById('enigme-6').classList.contains('hidden')) {
+      checkEnigme6();
+    }
+  }
+});
+
+// ==========================================
+// TYPING EFFECT
+// ==========================================
+function startTyping() {
+  var text = 'Agent ' + agentName + ', si vous lisez ce message, vous avez été sélectionné. Un groupe nommé OMBRE-9 diffuse des fake news coordonnées à grande échelle. Votre mission : remonter leur piste numérique et déjouer leur réseau en plusieurs énigmes.';
+  var target = document.getElementById('typing-target');
+  var cursor = document.getElementById('typing-cursor');
+  var i = 0;
+  var speed = 25;
+
+  function typeChar() {
+    if (i < text.length) {
+      // Insert character before cursor
+      var charSpan = document.createTextNode(text[i]);
+      target.insertBefore(charSpan, cursor);
+      i++;
+      setTimeout(typeChar, speed);
+    } else {
+      // Done typing -> show button
+      setTimeout(function() {
+        document.getElementById('intro-warning').classList.remove('hidden');
+        document.getElementById('btn-start').classList.remove('hidden');
+        document.getElementById('btn-start').style.animation = 'fadeSlideIn 0.4s ease-out';
+      }, 400);
+    }
+  }
+  typeChar();
+}
+
+// ==========================================
+// TRANSITIONS
+// ==========================================
+function transitionTo(fromId, toId) {
+  var fromEl = document.getElementById(fromId);
+  fromEl.style.opacity = '0';
+  fromEl.style.transition = 'opacity 0.4s';
+  setTimeout(function() {
+    fromEl.classList.add('hidden');
+    fromEl.style.opacity = '';
+    fromEl.style.transition = '';
+    var toEl = document.getElementById(toId);
+    toEl.classList.remove('hidden');
+    toEl.classList.add('animate-in');
+    toEl.style.animation = 'fadeSlideIn 0.6s ease-out';
+    // Scroll to top of card
+    setTimeout(function() { toEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+  }, 400);
+}
+
+function triggerGlitch() {
+  var overlay = document.getElementById('glitch-overlay');
+  overlay.classList.remove('active');
+  overlay.offsetHeight;
+  overlay.classList.add('active');
+  setTimeout(function() { overlay.classList.remove('active'); }, 900);
+}
+
+function triggerSuccessEffect(enigmeNum) {
+  // 1. Flash vert sur tout l'écran
+  var flash = document.createElement('div');
+  flash.className = 'success-overlay';
+  document.body.appendChild(flash);
+  setTimeout(function() { flash.remove(); }, 1300);
+
+  // 2. Bordure verte sur la carte
+  var card = document.getElementById('enigme-' + enigmeNum);
+  card.classList.add('success-flash');
+
+  // 3. Input glow
+  var input = document.getElementById('code-' + enigmeNum);
+  input.classList.add('input-success');
+  input.disabled = true;
+
+  // 4. Particules de succès
+  var rect = card.getBoundingClientRect();
+  var cx = rect.left + rect.width / 2;
+  var cy = rect.top + rect.height / 2;
+  for (var i = 0; i < 20; i++) {
+    (function(i) {
+      var p = document.createElement('div');
+      p.className = 'success-particle';
+      var angle = (Math.PI * 2 / 20) * i + (Math.random() - 0.5) * 0.5;
+      var dist = 80 + Math.random() * 180;
+      var size = 3 + Math.random() * 5;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = cx + 'px';
+      p.style.top = cy + 'px';
+      p.style.transition = 'all 1s cubic-bezier(0.22,1,0.36,1)';
+      p.style.opacity = '1';
+      document.body.appendChild(p);
+      requestAnimationFrame(function() {
+        p.style.left = (cx + Math.cos(angle) * dist) + 'px';
+        p.style.top = (cy + Math.sin(angle) * dist) + 'px';
+        p.style.opacity = '0';
+        p.style.transform = 'scale(0)';
+      });
+      setTimeout(function() { p.remove(); }, 1200);
+    })(i);
+  }
+
+  // 5. Message tapé lettre par lettre
+  var result = document.getElementById('result-' + enigmeNum);
+  result.className = 'result-msg success-msg typing-result';
+  result.textContent = '';
+  var msg = '> ACCÈS AUTORISÉ — Déchiffrement en cours...';
+  var ci = 0;
+  function typeResult() {
+    if (ci < msg.length) {
+      result.textContent += msg[ci];
+      ci++;
+      setTimeout(typeResult, 30);
+    } else {
+      result.style.borderRight = 'none';
+    }
+  }
+  typeResult();
+
+  // 6. Son de succès (beep synthétique)
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+    setTimeout(function() {
+      var osc2 = ctx.createOscillator();
+      var gain2 = ctx.createGain();
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.frequency.value = 1320;
+      osc2.type = 'sine';
+      gain2.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      osc2.start(ctx.currentTime);
+      osc2.stop(ctx.currentTime + 0.6);
+    }, 200);
+  } catch(e) {}
+}
+
+// ==========================================
+// PROGRESS
+// ==========================================
+function updateProgress(step) {
+  var section = document.getElementById('progress-section');
+  section.classList.remove('hidden');
+
+  var fill = document.getElementById('progress-fill');
+  fill.style.width = (step / 6 * 100) + '%';
+
+  document.getElementById('progress-text').textContent = step + ' / 6';
+
+  for (var i = 1; i <= 6; i++) {
+    var dot = document.getElementById('dot-' + i);
+    dot.className = 'progress-dot';
+    if (i <= step) dot.classList.add('done');
+    else if (i === step + 1) dot.classList.add('active');
+  }
+}
+
+// ==========================================
+// START ENIGME
+// ==========================================
+function startEnigme(n) {
+  currentEnigme = n;
+  var fromId = '';
+  if (n === 1) fromId = 'step-intro';
+  else if (n === 2) fromId = 'success-1';
+  else if (n === 3) fromId = 'success-2';
+  else if (n === 4) fromId = 'success-3';
+  else if (n === 5) fromId = 'success-4';
+  else if (n === 6) fromId = 'success-5';
+
+  if (n === 1) updateProgress(0);
+
+  transitionTo(fromId, 'enigme-' + n);
+}
+
+// ==========================================
+// HINT SYSTEM
+// ==========================================
+function getHint(enigme) {
+  var used = hintsUsed[enigme];
+  if (used >= 3) return;
+
+  var hintText = hints[enigme][used];
+  hintsUsed[enigme]++;
+
+  // Update dots
+  var dot = document.getElementById('hint-dot-' + enigme + '-' + (used + 1));
+  dot.classList.add('used');
+
+  // Show hint text
+  var textEl = document.getElementById('hint-text-' + enigme);
+  textEl.textContent = hintText;
+  textEl.classList.add('visible');
+}
+
+function previousHint(enigme) {
+  var used = hintsUsed[enigme];
+  if (used <= 0) return;
+
+  hintsUsed[enigme]--;
+  var newUsed = hintsUsed[enigme];
+
+  // Remove 'used' class from the dot that's being hidden
+  var dot = document.getElementById('hint-dot-' + enigme + '-' + (newUsed + 1));
+  dot.classList.remove('used');
+
+  // Update hint text
+  var textEl = document.getElementById('hint-text-' + enigme);
+  if (newUsed === 0) {
+    // No hints shown, hide the text
+    textEl.classList.remove('visible');
+    textEl.textContent = '';
+  } else {
+    // Show the previous hint
+    var hintText = hints[enigme][newUsed - 1];
+    textEl.textContent = hintText;
+    textEl.classList.add('visible');
+  }
+}
+
+// ==========================================
+// ENIGME 1 : CODE
+// ==========================================
+function checkEnigme1() {
+  var code = document.getElementById('code-1').value.trim().toUpperCase();
+  var result = document.getElementById('result-1');
+
+  if (code === 'CHILI' || code === 'ADMINBYPASS') {
+    triggerSuccessEffect(1);
+    setTimeout(function() {
+      updateProgress(1);
+      transitionTo('enigme-1', 'success-1');
+    }, 2200);
+  } else {
+    result.className = 'result-msg error';
+    result.textContent = '> ERREUR : Code invalide. Analyse la source et la signature.';
+    var input = document.getElementById('code-1');
+    input.style.animation = 'none'; input.offsetHeight;
+    input.style.animation = 'shake 0.4s ease';
+  }
+}
+
+// ==========================================
+// ENIGME 2 : IMAGE
+// ==========================================
+function checkEnigme2() {
+  var code = document.getElementById('code-2').value.trim().toUpperCase();
+  var result = document.getElementById('result-2');
+
+  if (code === 'FAKE-B42' || code === 'ADMINBYPASS') {
+    triggerSuccessEffect(2);
+    setTimeout(function() {
+      updateProgress(2);
+      transitionTo('enigme-2', 'success-2');
+    }, 2200);
+  } else {
+    result.className = 'result-msg error';
+    result.textContent = '> ERREUR : Code invalide. Analysez bien les documents.';
+    var input = document.getElementById('code-2');
+    input.style.animation = 'none'; input.offsetHeight;
+    input.style.animation = 'shake 0.4s ease';
+  }
+}
+
+// ==========================================
+// ENIGME 3 : BOTS
+// ==========================================
+function checkEnigme3() {
+  var code = document.getElementById('code-3').value.trim().toUpperCase();
+  var result = document.getElementById('result-3');
+
+  if (code === 'BOT-3-VITALE' || code === 'ADMINBYPASS') {
+    triggerSuccessEffect(3);
+    setTimeout(function() {
+      updateProgress(3);
+      transitionTo('enigme-3', 'success-3');
+    }, 2200);
+  } else {
+    result.className = 'result-msg error';
+    result.textContent = '> ERREUR : Code invalide. Analysez bien la conversation.';
+    var input = document.getElementById('code-3');
+    input.style.animation = 'none'; input.offsetHeight;
+    input.style.animation = 'shake 0.4s ease';
+  }
+}
+
+// ==========================================
+// ENIGME 4 : PROFIL SUSPECT
+// ==========================================
+function checkEnigme4() {
+  var code = document.getElementById('code-4').value.trim().toUpperCase();
+  var result = document.getElementById('result-4');
+
+  if (code === 'DEEP-D3' || code === 'ADMINBYPASS') {
+    triggerSuccessEffect(4);
+    setTimeout(function() {
+      updateProgress(4);
+      transitionTo('enigme-4', 'success-4');
+    }, 2200);
+  } else {
+    result.className = 'result-msg error';
+    result.textContent = '> ERREUR : Code invalide. Examinez bien chaque profil.';
+    var input = document.getElementById('code-4');
+    input.style.animation = 'none'; input.offsetHeight;
+    input.style.animation = 'shake 0.4s ease';
+  }
+}
+
+// ==========================================
+// ENIGME 5 : HOAX
+// ==========================================
+function checkEnigme5() {
+  var code = document.getElementById('code-5').value.trim().toUpperCase();
+  var result = document.getElementById('result-5');
+
+  if (code === 'HOAX-3-URGENT' || code === 'ADMINBYPASS') {
+    triggerSuccessEffect(5);
+    setTimeout(function() {
+      updateProgress(5);
+      transitionTo('enigme-5', 'success-5');
+    }, 2200);
+  } else {
+    result.className = 'result-msg error';
+    result.textContent = '> ERREUR : Code invalide. Cherchez les signaux d\'alerte.';
+    var input = document.getElementById('code-5');
+    input.style.animation = 'none'; input.offsetHeight;
+    input.style.animation = 'shake 0.4s ease';
+  }
+}
+
+// ==========================================
+// ENIGME 6 : SATIRE
+// ==========================================
+function checkEnigme6() {
+  var code = document.getElementById('code-6').value.trim().toUpperCase();
+  var result = document.getElementById('result-6');
+
+  if (code === 'SATIRE-AC' || code === 'ADMINBYPASS') {
+    triggerSuccessEffect(6);
+    setTimeout(function() {
+      updateProgress(6);
+      transitionTo('enigme-6', 'success-6');
+    }, 2200);
+  } else {
+    result.className = 'result-msg error';
+    result.textContent = '> ERREUR : Code invalide. Vérifiez bien les sources des articles.';
+    var input = document.getElementById('code-6');
+    input.style.animation = 'none'; input.offsetHeight;
+    input.style.animation = 'shake 0.4s ease';
+  }
+}
+
+// ==========================================
+// FINAL
+// ==========================================
+function showFinal() {
+  document.getElementById('final-agent-name').textContent = agentName;
+  triggerGlitch();
+  setTimeout(function() {
+    transitionTo('success-6', 'final-screen');
+  }, 800);
+}
+
+// ==========================================
+// AMBIENT DECORATIONS
+// ==========================================
+
+// Binary rain on left side
+(function() {
+  var container = document.getElementById('binary-rain');
+  if (!container) return;
+  var cols = 7;
+  for (var c = 0; c < cols; c++) {
+    var el = document.createElement('div');
+    el.className = 'bin-col';
+    el.style.left = (8 + c * 26) + 'px';
+    el.style.animationDuration = (12 + Math.random() * 18) + 's';
+    el.style.animationDelay = (-Math.random() * 15) + 's';
+    el.style.opacity = 0.2 + Math.random() * 0.2;
+    var t = '';
+    for (var i = 0; i < 120; i++) {
+      t += Math.random() > 0.5 ? '1' : '0';
+    }
+    el.textContent = t;
+    container.appendChild(el);
+  }
+})();
+
+// Network log
+(function() {
+  var container = document.getElementById('net-log-entries');
+  if (!container) return;
+  var msgs = [
+    'Scan port 443\u2026 OK',
+    'Paquet 0x4F intercept\u00e9',
+    'Connexion chiffr\u00e9e d\u00e9tect\u00e9e',
+    'N\u0153ud relais #7 actif',
+    'Analyse DNS en cours\u2026',
+    'Trace IP 192.168.\u2588.\u2588\u2588\u2588',
+    'Flux TCP captur\u00e9',
+    'Signature OMBRE d\u00e9tect\u00e9e',
+    'Pare-feu contourn\u00e9',
+    'Hash MD5 v\u00e9rifi\u00e9',
+    'Tunnel VPN localis\u00e9',
+    'Port 8080 ouvert',
+    'Injection SQL bloqu\u00e9e',
+    'Certificat invalide',
+    'Requ\u00eate HTTPS suspecte',
+    'Proxy d\u00e9tect\u00e9',
+    'Scan r\u00e9seau 54%',
+    'Cl\u00e9 RSA 2048 bits',
+    'Serveur C2 identifi\u00e9',
+    'G\u00e9oloc: \u2588\u2588.\u2588\u2588, \u2588.\u2588\u2588\u2588',
+    'Trafic anormal',
+    'Handshake TLS v1.3',
+    'N\u0153ud Tor rep\u00e9r\u00e9',
+    'Exfiltration 0.3 KB',
+    'Backdoor neutralis\u00e9e'
+  ];
+  var types = ['', '', '', '', 'warn', 'danger'];
+  function addEntry() {
+    var e = document.createElement('div');
+    var type = types[Math.floor(Math.random() * types.length)];
+    e.className = 'net-entry' + (type ? ' ' + type : '');
+    var d = new Date();
+    var ts = ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2);
+    e.textContent = ts + ' ' + msgs[Math.floor(Math.random() * msgs.length)];
+    container.insertBefore(e, container.firstChild);
+    while (container.children.length > 25) container.removeChild(container.lastChild);
+  }
+  for (var i = 0; i < 10; i++) addEntry();
+  function scheduleNext() {
+    setTimeout(function() { addEntry(); scheduleNext(); }, 2500 + Math.random() * 4000);
+  }
+  scheduleNext();
+})();
+
+// Floating hex data
+(function() {
+  var hex = '0123456789ABCDEF';
+  function spawn() {
+    var el = document.createElement('div');
+    el.className = 'data-float';
+    var t = '0x';
+    for (var i = 0; i < 4 + Math.floor(Math.random()*4); i++) t += hex[Math.floor(Math.random()*16)];
+    el.textContent = t;
+    el.style.left = (5 + Math.random() * 90) + 'vw';
+    el.style.opacity = 0.08 + Math.random() * 0.08;
+    el.style.fontSize = (0.5 + Math.random() * 0.3) + 'em';
+    var dur = 14 + Math.random() * 16;
+    el.style.transition = 'none';
+    el.style.top = '105vh';
+    document.body.appendChild(el);
+    requestAnimationFrame(function() {
+      el.style.transition = 'top ' + dur + 's linear';
+      el.style.top = '-30px';
+    });
+    setTimeout(function() { if (el.parentNode) el.remove(); }, (dur + 1) * 1000);
+  }
+  for (var i = 0; i < 4; i++) setTimeout(spawn, i * 3000);
+  function scheduleSpawn() {
+    setTimeout(function() { spawn(); scheduleSpawn(); }, 4000 + Math.random() * 6000);
+  }
+  scheduleSpawn();
+})();
+</script>
+
+</body>
+</html>
