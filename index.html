@@ -210,8 +210,10 @@
     }
     @media (min-width:1401px) {
       main {
-        margin-right: 0;
-        padding-right: 420px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 320px;
+        padding-right: 320px;
       }
     }
 
@@ -873,7 +875,7 @@
   <section class="card hidden" id="enigme-1">
     <h2><span class="icon">&#x1F9EC;</span> Énigme 1/6 — Faux posts</h2>
     <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 a publié un faux post sur les réseaux sociaux. Ce post utilise des photos qui ne correspondent pas à ce qu'il prétend montrer. Analysez les images et les informations du document pour retrouver <strong style="color:#00ff41;">d'où viennent réellement ces images</strong> <strong style="color:#00ff41;"></strong>.</p>
-    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Téléchargez et consultez le <strong style="color:#aaa;">Document PDF</strong> pour résoudre cette énigme.</p>
+    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Téléchargez et consultez le <strong style="color:#aaa;">Document PDF  </strong> pour résoudre cette énigme.</p>
 
     <button class="btn" onclick="openDocument('enigme1.pdf')" style="margin: 15px 0;"><span>📄 Charger le Document 1</span></button>
 
@@ -910,14 +912,29 @@
     <button class="btn btn-next" onclick="startEnigme(2)"><span>Énigme suivante &#x27A1;</span></button>
   </section>
 
-  <!-- ====== ENIGME 2 : Manipulation d'image ====== -->
+  <!-- ====== ENIGME 2 : Vérification d'information avec Internet ====== -->
   <section class="card hidden" id="enigme-2">
-    <h2><span class="icon">&#x1F5BC;</span> Énigme 2/6 — Propagande visuelle</h2>
-    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise des images manipulées pour susciter la peur. Identifiez l'image truquée.</p>
-    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 2</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+    <h2><span class="icon">&#x1F310;</span> Énigme 2/6 — Désinformation géopolitique</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> Vérifier si une information publiée en ligne est vraie ou non. Utilisez Internet et vos connaissances pour déterminer la véracité de cette publication.</p>
+    
+    <div style="background:#2a2a32; border:1px solid #3a3a42; border-left:3px solid #ff4444; padding:16px; border-radius:8px; margin:16px 0;">
+      <p style="color:#ff9999; font-size:0.9em; line-height:1.7;"><strong>📰 PUBLICATION INTERCEPTÉE :</strong></p>
+      <p style="color:#ddd; font-size:0.85em; line-height:1.8; margin-top:12px;">
+        Le compte officiel de la Maison-Blanche a publié sur X, le 20 janvier 2026, une image montrant Donald Trump, aux côtés du vice-président JD Vance et du ministre des Affaires étrangères Marco Rubio, plantant un drapeau américain sur le sol groenlandais, accompagné de la mention <strong>"Greenland – US Territory"</strong> (Groenland – Territoire américain).
+      </p>
+    </div>
+
+    <div style="margin:16px 0; text-align:center;">
+      <img src="enigme2_image.png" alt="Image de Trump au Groenland" style="max-width:100%; max-height:350px; border:1px solid #3a3a42; border-radius:8px; margin-bottom:8px;">
+      <p style="color:#777; font-size:0.8em; font-style:italic;">📷 Image capturée de la publication</p>
+    </div>
+    
+    <div style="background:#1a3a2a; border:1px solid #00ff4133; padding:12px; border-radius:8px; margin:16px 0;">
+      <p style="color:#00ff41; font-size:0.85em; line-height:1.6;"><strong>💡 ANALYSE REQUISE :</strong> Vérifiez rapidement si cette information est vraie en consultant des sources officielles, des factcheckers ou des agences de presse réputées. Utilisez votre moteur de recherche pour vérifier les déclarations.</p>
+    </div>
 
     <div class="input-group">
-      <label>// entrez le code découvert :</label>
+      <label>// Code de vérification (basé sur votre analyse) :</label>
       <div class="input-row">
         <input class="input" id="code-2" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
         <button class="btn" onclick="checkEnigme2()"><span>Valider</span></button>
@@ -942,9 +959,9 @@
   <section class="card hidden" id="success-2">
     <div class="success-icon">&#x1F513;</div>
     <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 2 résolue</h2>
-    <p style="text-align:center; color:#888;">Image truquée identifiée : <strong style="color:#00ff41;">Image B</strong> - Le graphique sans source</p>
+    <p style="text-align:center; color:#888;">Information vérifiée : <strong style="color:#00ff41;">Image générée par IA</strong> — Trump n'a PAS annexé le Groenland</p>
     <div class="success-rule">
-      <p>&#x1F5BC; Règle n&deg;2 : Une image sans source, sans contexte et qui joue sur les émotions est probablement manipulée.</p>
+      <p>&#x1F310; Règle n&deg;2 : Croiser les sources! Si un fait semble extraordinaire ou choquant, vérifiez auprès des sources officielles et des factcheckers avant de le croire.</p>
     </div>
     <button class="btn btn-next" onclick="startEnigme(3)"><span>Énigme suivante &#x27A1;</span></button>
   </section>
@@ -952,13 +969,33 @@
   <!-- ====== ENIGME 3 : Bots et faux comptes ====== -->
   <section class="card hidden" id="enigme-3">
     <h2><span class="icon">&#x1F916;</span> Énigme 3/6 — Les faux comptes</h2>
-    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise des bots pour amplifier ses messages. Analysez la conversation et identifiez les signes suspects.</p>
-    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 3</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise des bots pour amplifier ses messages sur les réseaux sociaux. Vous devez analyser un fil Instagram et identifier tous les bots cachés parmi les commentaires.</p>
+    
+    <div style="background:#1a3a2a; border:1px solid #00ff4133; padding:16px; border-radius:8px; margin:16px 0;">
+      <p style="color:#00ff41; font-size:0.9em; line-height:1.8;"><strong>🔍 CONSIGNES :</strong></p>
+      <ul style="color:#00ff41; font-size:0.85em; line-height:1.8; margin-left:20px; margin-top:10px;">
+        <li>Accédez au site mirror d'Instagram ci-dessous</li>
+        <li>Analysez les profils et commentaires des posts</li>
+        <li>Identifiez TOUS les comptes bots (messages répétitifs, création récente, 0 publication, abonnements massifs...)</li>
+        <li>Validez vos suspects sur le site</li>
+        <li>Vous obtiendrez automatiquement le code secret</li>
+      </ul>
+    </div>
+
+    <div style="margin:20px 0; text-align:center;">
+      <a href="snapgram_escape_v2.html" target="_blank" style="display:inline-block; background:#00ff41; color:#000; padding:14px 32px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.95em; cursor:pointer; box-shadow:0 0 20px #00ff4144; transition:all 0.3s;">
+        🔗 Accéder au site Snapgram (nouvelle fenêtre)
+      </a>
+    </div>
+
+    <div style="background:#2a2a32; border:1px solid #3a3a42; border-left:3px solid #ff9900; padding:14px; border-radius:8px; margin:16px 0;">
+      <p style="color:#ff9900; font-size:0.85em; line-height:1.6;"><strong>💡 AIDE :</strong> Sur le site, cliquez sur les profils suspects pour voir leurs informations. Cherchez les signes : compte créé le même jour, 0 publication mais des milliers d'abonnements, commentaires identiques sur plusieurs posts à la même heure exacte.</p>
+    </div>
 
     <div class="input-group">
-      <label>// entrez le code découvert :</label>
+      <label>// Code validé sur le site Snapgram :</label>
       <div class="input-row">
-        <input class="input" id="code-3" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <input class="input" id="code-3" placeholder="Entrez le code obtenu ici" autocomplete="off" spellcheck="false">
         <button class="btn" onclick="checkEnigme3()"><span>Valider</span></button>
       </div>
     </div>
@@ -990,9 +1027,12 @@
 
   <!-- ====== ENIGME 4 : Profil suspect ====== -->
   <section class="card hidden" id="enigme-4">
-    <h2><span class="icon">&#x1F464;</span> Énigme 4/6 — Le profil suspect</h2>
-    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise de faux profils générés par IA pour infiltrer les réseaux sociaux. Identifiez le faux profil et ses anomalies.</p>
-    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 4</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+    <h2><span class="icon">&#x1F464;</span> Énigme 4/6 — L'élément suspect</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> Un élément ne va pas sur cette image, une coupe de cheveux qui ne correspond pas. Trouvez à quelle personne appartient réellement cette coupe de cheveux !</p>
+    
+    <div style="margin:16px 0; text-align:center;">
+      <img src="enigme4_image.jpg" alt="Image Énigme 4" style="max-width:250px; height:auto; border:2px solid #00ff41; border-radius:8px; box-shadow:0 0 20px #00ff4133;">
+    </div>
 
     <div class="input-group">
       <label>// entrez le code découvert :</label>
@@ -1029,9 +1069,14 @@
 
   <!-- ====== ENIGME 5 : Le hoax ====== -->
   <section class="card hidden" id="enigme-5">
-    <h2><span class="icon">&#x1F4E9;</span> Énigme 5/6 — La chaîne virale</h2>
-    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 diffuse des hoax par chaînes de messages. Identifiez les signaux d'alerte et trouvez le code caché.</p>
-    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 5</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+    <h2><span class="icon">&#x1F4A0;</span> Énigme 5/6 — Piégé par les pop-ups</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise des pop-ups piégés pour arnaquer les utilisateurs. Fermez les 30 pop-ups d'un site web sans cliquer sur les mauvais boutons et évitez de vous faire scammer pour obtenir le code !</p>
+    
+    <div style="margin:16px 0; text-align:center;">
+      <a href="enigme5_popup.html" target="_blank" style="display:inline-block; background:#00ff41; color:#000; padding:14px 32px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.95em; cursor:pointer; box-shadow:0 0 20px #00ff4144; transition:all 0.3s;">
+        🔗 Accéder au site piégé (nouvelle fenêtre)
+      </a>
+    </div>
 
     <div class="input-group">
       <label>// entrez le code découvert :</label>
@@ -1059,9 +1104,9 @@
   <section class="card hidden" id="success-5">
     <div class="success-icon">&#x1F513;</div>
     <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 5 résolue</h2>
-    <p style="text-align:center; color:#888;">Hoax neutralisé : <strong style="color:#00ff41;">3 signaux d'alerte</strong> identifiés</p>
+    <p style="text-align:center; color:#888;">Tous les pop-ups fermés : <strong style="color:#00ff41;">30/30</strong> pop-ups rejetés !</p>
     <div class="success-rule">
-      <p>&#x1F4E9; Règle n&deg;5 : Un message qui te demande de &laquo; partager absolument &raquo; et crée l'urgence est presque toujours un hoax.</p>
+      <p>&#x1F4A0; Règle n&deg;5 : Restez vigilant sur le web. Les arnaqueurs utilisent des pop-ups sophistiqués pour tromper les utilisateurs. Vérifiez toujours le bouton sur lequel vous cliquez !</p>
     </div>
     <button class="btn btn-next" onclick="startEnigme(6)"><span>Énigme suivante &#x27A1;</span></button>
   </section>
@@ -1218,9 +1263,9 @@ var hints = {
     'Ces images viennent d\'un autre pays. Le code est le nom de ce pays.'
   ],
   2: [
-    'Observez bien les documents papier : qu\'est-ce qui manque dans l\'image suspecte ?',
-    'Une image de propagande n\'a généralement pas de source ni d\'axe.',
-    'Le code combine le mot FAKE, la lettre de l\'image et un nombre caché dans le document.'
+    'Vérifiez sur des sources réputées (BBC, Reuters, AFP, agences officielles) : Trump a-t-il vraiment annexé le Groenland ?',
+    'Cherchez des factcheckers (Snopes, AFP Factuel, Le Monde Vérifications). Que disent-ils de cette image ?',
+    'Le code reflète le statut de l\'information.'
   ],
   3: [
     'Comptez les comptes qui répètent exactement le même message.',
@@ -1228,14 +1273,12 @@ var hints = {
     'Le code est : BOT - nombre de bots - le mot répété en majuscules.'
   ],
   4: [
-    'Comparez les 4 profils : lequel a une bio qui ne correspond pas à sa photo ?',
-    'Les photos générées par IA ont souvent des détails étranges (oreilles, arrière-plan flou).',
-    'Le profil D a 3 anomalies. Le code est DEEP suivi de la lettre et du nombre.'
+    'Il s\'agit d\'un de ses amis.',
+    'Il est membre de la team crouton.',
+    'Il a rencontré la sirène, Andrea, lors d\'un voyage au Mexique.'
   ],
   5: [
-    'Quels sont les 3 signaux typiques d\'un hoax dans ce message ?',
-    'Urgence + pas de source + « Partagez ! » = hoax.',
-    'Le code combine HOAX, le nombre de signaux et le mot clé du message.'
+    'Soyez attentif aux pop-ups et cliquez sur le bon bouton (croix ou refuser par exemple).'
   ],
   6: [
     'Vérifiez le nom des sites : un d\'entre eux est connu pour être satirique.',
@@ -1632,13 +1675,13 @@ function checkEnigme1() {
 }
 
 // ==========================================
-// ENIGME 2 : IMAGE
+// ENIGME 2 : VÉRIFICATION D'INFORMATION
 // ==========================================
 function checkEnigme2() {
   var code = document.getElementById('code-2').value.trim().toUpperCase();
   var result = document.getElementById('result-2');
 
-  if (code === 'FAKE-B42' || code === 'ADMINBYPASS') {
+  if (code === 'FAUX'|| code === 'ADMINBYPASS') {
     triggerSuccessEffect(2);
     setTimeout(function() {
       updateProgress(2);
@@ -1646,7 +1689,7 @@ function checkEnigme2() {
     }, 2200);
   } else {
     result.className = 'result-msg error';
-    result.textContent = '> ERREUR : Code invalide. Analysez bien les documents.';
+    result.textContent = '> ERREUR : Code invalide. Vérifiez bien auprès de sources officielles et factcheckers.';
     var input = document.getElementById('code-2');
     input.style.animation = 'none'; input.offsetHeight;
     input.style.animation = 'shake 0.4s ease';
@@ -1660,7 +1703,7 @@ function checkEnigme3() {
   var code = document.getElementById('code-3').value.trim().toUpperCase();
   var result = document.getElementById('result-3');
 
-  if (code === 'BOT-3-VITALE' || code === 'ADMINBYPASS') {
+  if (code === 'INFILTRATION' || code === 'ADMINBYPASS') {
     triggerSuccessEffect(3);
     setTimeout(function() {
       updateProgress(3);
@@ -1668,7 +1711,7 @@ function checkEnigme3() {
     }, 2200);
   } else {
     result.className = 'result-msg error';
-    result.textContent = '> ERREUR : Code invalide. Analysez bien la conversation.';
+    result.textContent = '> ERREUR : Code invalide. Vérifiez que vous avez bien trouvé TOUS les bots sur le site Snapgram.';
     var input = document.getElementById('code-3');
     input.style.animation = 'none'; input.offsetHeight;
     input.style.animation = 'shake 0.4s ease';
@@ -1682,7 +1725,7 @@ function checkEnigme4() {
   var code = document.getElementById('code-4').value.trim().toUpperCase();
   var result = document.getElementById('result-4');
 
-  if (code === 'DEEP-D3' || code === 'ADMINBYPASS') {
+  if (code === 'INOXTAG' || code === 'ADMINBYPASS') {
     triggerSuccessEffect(4);
     setTimeout(function() {
       updateProgress(4);
@@ -1704,7 +1747,7 @@ function checkEnigme5() {
   var code = document.getElementById('code-5').value.trim().toUpperCase();
   var result = document.getElementById('result-5');
 
-  if (code === 'HOAX-3-URGENT' || code === 'ADMINBYPASS') {
+  if (code === 'VIGILANT' || code === 'ADMINBYPASS') {
     triggerSuccessEffect(5);
     setTimeout(function() {
       updateProgress(5);

@@ -1,0 +1,464 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafafa; color: #262626; }
+.app { display: flex; min-height: 600px; }
+.nav { width: 220px; position: sticky; top: 0; height: 100vh; border-right: 1px solid #dbdbdb; background: #fff; padding: 20px 0; display: flex; flex-direction: column; flex-shrink: 0; }
+.nav-logo { font-size: 22px; font-weight: 700; padding: 12px 20px 24px; letter-spacing: -1px; font-style: italic; }
+.nav-logo span { color: #e1306c; }
+.nav-item { display: flex; align-items: center; gap: 14px; padding: 12px 20px; font-size: 15px; cursor: pointer; border-radius: 8px; margin: 2px 8px; }
+.nav-item:hover { background: #f5f5f5; }
+.nav-item.active { font-weight: 600; }
+.nav-icon { font-size: 20px; }
+.feed { flex: 1; max-width: 600px; margin: 0 auto; padding: 20px 16px; }
+.stories { display: flex; gap: 12px; padding: 16px; background: #fff; border: 1px solid #dbdbdb; border-radius: 12px; margin-bottom: 20px; overflow-x: auto; }
+.story { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; flex-shrink: 0; }
+.story-ring { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); padding: 2px; }
+.story-avatar { width: 100%; height: 100%; border-radius: 50%; background: #ddd; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.story-name { font-size: 11px; color: #262626; max-width: 68px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.post { background: #fff; border: 1px solid #dbdbdb; border-radius: 12px; margin-bottom: 20px; }
+.post-header { display: flex; align-items: center; gap: 10px; padding: 14px; }
+.post-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); padding: 2px; flex-shrink: 0; }
+.post-avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #ddd; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.post-username { font-weight: 600; font-size: 14px; cursor: pointer; color: #262626; }
+.post-username:hover { text-decoration: underline; }
+.post-location { font-size: 12px; color: #8e8e8e; }
+.post-more { margin-left: auto; font-size: 20px; cursor: pointer; color: #8e8e8e; }
+.post-image-placeholder { width: 100%; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; font-size: 80px; }
+.post-actions { display: flex; align-items: center; gap: 14px; padding: 10px 14px; }
+.post-action-btn { background: none; border: none; cursor: pointer; font-size: 22px; padding: 2px; }
+.post-save { margin-left: auto; }
+.post-likes { font-size: 14px; font-weight: 600; padding: 0 14px 6px; }
+.post-caption { font-size: 14px; padding: 0 14px 8px; line-height: 1.5; }
+.post-caption strong { font-weight: 600; }
+.post-hashtags { color: #00376b; }
+.view-comments-btn { font-size: 14px; color: #8e8e8e; padding: 0 14px 10px; cursor: pointer; background: none; border: none; display: block; text-align: left; }
+.view-comments-btn:hover { color: #262626; }
+.comments-section { border-top: 1px solid #efefef; padding: 10px 14px; max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.comments-section.open { max-height: 600px; overflow-y: auto; }
+.comment { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
+.comment-avatar { width: 30px; height: 30px; border-radius: 50%; background: #ddd; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; border: 1px solid #dbdbdb; }
+.comment-avatar:hover { border-color: #262626; }
+.comment-body { flex: 1; }
+.comment-username { font-weight: 600; font-size: 13px; cursor: pointer; }
+.comment-username:hover { text-decoration: underline; }
+.comment-text { font-size: 13px; line-height: 1.4; }
+.comment-time { font-size: 11px; color: #8e8e8e; margin-top: 3px; }
+.comment-like { font-size: 14px; cursor: pointer; margin-left: auto; padding-left: 8px; }
+.post-time { font-size: 12px; color: #8e8e8e; padding: 0 14px 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto; }
+.modal-header { display: flex; align-items: center; gap: 16px; padding: 22px; border-bottom: 1px solid #efefef; }
+.modal-avatar-big { width: 70px; height: 70px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+.modal-username { font-size: 18px; font-weight: 700; }
+.modal-fullname { font-size: 13px; color: #8e8e8e; margin-top: 2px; }
+.modal-stats { display: flex; gap: 24px; padding: 14px 22px; border-bottom: 1px solid #efefef; }
+.modal-stat { text-align: center; }
+.modal-stat-num { font-weight: 700; font-size: 16px; }
+.modal-stat-label { font-size: 12px; color: #8e8e8e; }
+.modal-info { padding: 14px 22px; }
+.modal-info-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
+.modal-info-label { color: #8e8e8e; }
+.modal-info-value { font-weight: 500; max-width: 60%; text-align: right; }
+.modal-posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.modal-post-thumb { aspect-ratio: 1; background: #efefef; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; }
+.close-modal { margin-left: auto; background: none; border: none; font-size: 22px; cursor: pointer; color: #8e8e8e; }
+.close-modal:hover { color: #262626; }
+.add-suspect-btn { display: block; width: calc(100% - 44px); margin: 10px 22px; padding: 9px; background: none; border: 1.5px solid #dbdbdb; border-radius: 8px; font-size: 13px; cursor: pointer; color: #555; }
+.add-suspect-btn:hover { border-color: #262626; color: #262626; }
+.add-suspect-btn.added { border-color: #e74c3c; color: #e74c3c; background: #fff5f5; }
+.sidebar { width: 270px; padding: 20px; position: sticky; top: 20px; height: fit-content; flex-shrink: 0; }
+.sidebar-profile { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.sidebar-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045); padding: 2px; }
+.sidebar-avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.sidebar-username { font-weight: 700; font-size: 14px; }
+.sidebar-name { font-size: 13px; color: #8e8e8e; }
+.notebook-btn { position: fixed; bottom: 24px; right: 24px; background: #1a1a2e; color: #fff; border: none; border-radius: 50px; padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; z-index: 100; box-shadow: 0 4px 16px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; }
+.notebook-btn:hover { background: #2a2a4e; }
+.notebook-panel { position: fixed; bottom: 80px; right: 24px; background: #fffef5; border: 1.5px solid #e8c840; border-radius: 16px; width: 300px; z-index: 100; display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.notebook-panel.open { display: block; }
+.notebook-header { background: #e8c840; border-radius: 14px 14px 0 0; padding: 12px 16px; font-weight: 700; font-size: 14px; color: #1a1a00; display: flex; align-items: center; justify-content: space-between; }
+.notebook-body { padding: 14px 16px; }
+.notebook-section { margin-bottom: 14px; }
+.notebook-section-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+.notebook-suspect-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #fff; border-radius: 8px; margin-bottom: 4px; border: 1px solid #f0e8a0; }
+.notebook-suspect-name { font-size: 13px; flex: 1; font-weight: 500; }
+.notebook-remove { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; padding: 0 2px; }
+.notebook-remove:hover { color: #e74c3c; }
+.notebook-empty { font-size: 13px; color: #bbb; font-style: italic; padding: 4px 0; }
+.notebook-clue-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.notebook-clue-check { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 4px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; margin-top: 1px; }
+.notebook-clue-check.ticked { background: #2ecc71; border-color: #2ecc71; color: #fff; }
+.notebook-clue-label { font-size: 13px; color: #444; line-height: 1.4; cursor: pointer; }
+.notebook-clue-label:hover { color: #000; }
+.notebook-footer { border-top: 1px dashed #e0d080; padding: 10px 16px; }
+.notebook-validate-btn { width: 100%; padding: 9px; background: #1a1a2e; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.notebook-validate-btn:hover { background: #2a2a4e; }
+.result-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; display: none; align-items: center; justify-content: center; }
+.result-overlay.open { display: flex; }
+.result-box { background: #fff; border-radius: 20px; padding: 32px; max-width: 420px; text-align: center; }
+.result-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+.result-text { font-size: 14px; color: #555; line-height: 1.7; }
+.result-close { margin-top: 20px; padding: 10px 28px; background: #1a1a2e; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+@media (max-width: 900px) { .sidebar { display: none; } }
+@media (max-width: 680px) { .nav { width: 58px; } .nav-item span { display: none; } }
+</style>
+
+<div class="app" id="app">
+  <nav class="nav">
+    <div class="nav-logo"><span>Snap</span>gram</div>
+    <div class="nav-item active"><span class="nav-icon">🏠</span><span>Accueil</span></div>
+    <div class="nav-item"><span class="nav-icon">🔍</span><span>Explorer</span></div>
+    <div class="nav-item"><span class="nav-icon">🎬</span><span>Reels</span></div>
+    <div class="nav-item"><span class="nav-icon">💬</span><span>Messages</span></div>
+    <div class="nav-item"><span class="nav-icon">❤️</span><span>Notifs</span></div>
+    <div class="nav-item" style="margin-top:auto;"><span class="nav-icon">👤</span><span>Profil</span></div>
+  </nav>
+
+  <main class="feed">
+    <div class="stories">
+      <div class="story"><div class="story-ring"><div class="story-avatar">🌊</div></div><span class="story-name">surf_life</span></div>
+      <div class="story"><div class="story-ring"><div class="story-avatar">🍕</div></div><span class="story-name">foodlover</span></div>
+      <div class="story"><div class="story-ring"><div class="story-avatar">🏔️</div></div><span class="story-name">mountain_go</span></div>
+      <div class="story"><div class="story-ring"><div class="story-avatar">📸</div></div><span class="story-name">photo.daily</span></div>
+    </div>
+
+    <!-- POST 1 -->
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar"><div class="post-avatar-inner">🌅</div></div>
+        <div><div class="post-username" onclick="openProfile('marine_photos')">marine_photos</div><div class="post-location">📍 Côte d'Azur</div></div>
+        <div class="post-more">···</div>
+      </div>
+      <img src="photo/cote d'azur sunset.webp" alt="Coucher de soleil Côte d'Azur" style="width:100%; aspect-ratio:4/3; object-fit:cover; display:block;">
+      <div class="post-actions"><button class="post-action-btn">🤍</button><button class="post-action-btn">💬</button><button class="post-action-btn">📤</button><button class="post-action-btn post-save">🔖</button></div>
+      <div class="post-likes">2 847 mentions j'aime</div>
+      <div class="post-caption"><strong>marine_photos</strong> Le ciel en feu ce soir ✨ <span class="post-hashtags">#sunset #nature #france #photography</span></div>
+      <button class="view-comments-btn" onclick="toggleComments('c1',this)">Voir les 47 commentaires</button>
+      <div class="comments-section" id="c1">
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('julia_travel')">✈️</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('julia_travel')">julia_travel</span><span class="comment-text"> Magnifique comme toujours 😍</span><div class="comment-time">il y a 3h</div></div>
+          <span class="comment-like">🤍</span>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('claire.bnrd')">🙂</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('claire.bnrd')">claire.bnrd</span><span class="comment-text"> Super photo ! Check mon profil 🔥 lien en bio pour gagner des abonnés !</span><div class="comment-time">il y a 2h · 14:32:07</div></div>
+          <span class="comment-like">🤍</span>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('thomas_k')">🏄</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('thomas_k')">thomas_k</span><span class="comment-text"> Incroyable ce dégradé de couleurs !</span><div class="comment-time">il y a 2h</div></div>
+          <span class="comment-like">🤍</span>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('marc.delacroix')">😊</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('marc.delacroix')">marc.delacroix</span><span class="comment-text"> Trop beau 😍😍 tu veux des vrais abonnés ? Lien dans ma bio, 10K garanti !</span><div class="comment-time">il y a 2h · 14:32:09</div></div>
+          <span class="comment-like">🤍</span>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('lea.fontaine22')">🌸</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('lea.fontaine22')">lea.fontaine22</span><span class="comment-text"> Super photo ! Check mon profil 🔥 lien en bio pour gagner des abonnés !</span><div class="comment-time">il y a 2h · 14:32:07</div></div>
+          <span class="comment-like">🤍</span>
+        </div>
+      </div>
+      <div class="post-time">il y a 5 heures</div>
+    </div>
+
+    <!-- POST 2 -->
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar"><div class="post-avatar-inner">👨‍🍳</div></div>
+        <div><div class="post-username" onclick="openProfile('chef_antoine')">chef_antoine</div><div class="post-location">📍 Lyon, France</div></div>
+        <div class="post-more">···</div>
+      </div>
+      <img src="photo/tagiatelle_truffe_noir.jpg" alt="Tagliatelles aux truffes noires" style="width:100%; aspect-ratio:4/3; object-fit:cover; display:block;">
+      <div class="post-actions"><button class="post-action-btn">🤍</button><button class="post-action-btn">💬</button><button class="post-action-btn">📤</button><button class="post-action-btn post-save">🔖</button></div>
+      <div class="post-likes">1 203 mentions j'aime</div>
+      <div class="post-caption"><strong>chef_antoine</strong> Tagliatelles fraîches aux truffes noires 🖤 <span class="post-hashtags">#foodporn #cuisine #lyon #truffes</span></div>
+      <button class="view-comments-btn" onclick="toggleComments('c2',this)">Voir les 31 commentaires</button>
+      <div class="comments-section" id="c2">
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('sophie_m')">🌸</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('sophie_m')">sophie_m</span><span class="comment-text"> Ça a l'air divin !</span><div class="comment-time">il y a 1h</div></div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('remi.pascal')">😄</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('remi.pascal')">remi.pascal</span><span class="comment-text"> Nice 👍 suis-moi en retour !!</span><div class="comment-time">il y a 47 min · 16:05:22</div></div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('julien.mrtn')">🙂</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('julien.mrtn')">julien.mrtn</span><span class="comment-text"> Nice 👍 suis-moi en retour !!</span><div class="comment-time">il y a 47 min · 16:05:22</div></div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('nath.brvs')">😊</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('nath.brvs')">nath.brvs</span><span class="comment-text"> Nice 👍 suis-moi en retour !!</span><div class="comment-time">il y a 47 min · 16:05:22</div></div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('pierre_gourmet')">🍷</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('pierre_gourmet')">pierre_gourmet</span><span class="comment-text"> Un accord parfait avec un bourgogne 🍷</span><div class="comment-time">il y a 30 min</div></div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('claire.bnrd')">🙂</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('claire.bnrd')">claire.bnrd</span><span class="comment-text"> Super photo ! Check mon profil 🔥 lien en bio pour gagner des abonnés !</span><div class="comment-time">il y a 28 min · 14:32:07</div></div>
+        </div>
+      </div>
+      <div class="post-time">il y a 2 heures</div>
+    </div>
+
+    <!-- POST 3 -->
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar"><div class="post-avatar-inner">🗺️</div></div>
+        <div><div class="post-username" onclick="openProfile('alex_explorer')">alex_explorer</div><div class="post-location">📍 Kyoto, Japon</div></div>
+        <div class="post-more">···</div>
+      </div>
+      <img src="photo/Fushimi_Inari.png" alt="Fushimi Inari" style="width:100%; aspect-ratio:4/3; object-fit:cover; display:block;">
+      <div class="post-actions"><button class="post-action-btn">🤍</button><button class="post-action-btn">💬</button><button class="post-action-btn">📤</button><button class="post-action-btn post-save">🔖</button></div>
+      <div class="post-likes">5 621 mentions j'aime</div>
+      <div class="post-caption"><strong>alex_explorer</strong> Fushimi Inari au lever du soleil 🌸 <span class="post-hashtags">#japan #kyoto #travel #torii</span></div>
+      <button class="view-comments-btn" onclick="toggleComments('c3',this)">Voir les 89 commentaires</button>
+      <div class="comments-section" id="c3">
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('camille_w')">🌺</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('camille_w')">camille_w</span><span class="comment-text"> Sur ma liste depuis des années !</span><div class="comment-time">il y a 4h</div></div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('marc.delacroix')">😊</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('marc.delacroix')">marc.delacroix</span><span class="comment-text"> Trop beau 😍😍 tu veux des vrais abonnés ? Lien dans ma bio, 10K garanti !</span><div class="comment-time">il y a 3h · 15:14:07</div></div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('lea.fontaine22')">🌸</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('lea.fontaine22')">lea.fontaine22</span><span class="comment-text"> Super photo ! Check mon profil 🔥 lien en bio pour gagner des abonnés !</span><div class="comment-time">il y a 3h · 15:14:07</div></div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('nicolas_v')">🎒</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('nicolas_v')">nicolas_v</span><span class="comment-text"> J'y suis allé en décembre, absolument magique 🙏</span><div class="comment-time">il y a 2h</div></div>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('claire.bnrd')">🙂</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('claire.bnrd')">claire.bnrd</span><span class="comment-text"> Super photo ! Check mon profil 🔥 lien en bio pour gagner des abonnés !</span><div class="comment-time">il y a 1h · 15:14:07</div></div>
+        </div>
+      </div>
+      <div class="post-time">il y a 6 heures</div>
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="sidebar-profile">
+      <div class="sidebar-avatar"><div class="sidebar-avatar-inner">🕵️</div></div>
+      <div><div class="sidebar-username">detective_vous</div><div class="sidebar-name">Joueur escape game</div></div>
+    </div>
+    <div style="font-size:11px;color:#c7c7c7;line-height:1.8;margin-top:40px;">À propos · Aide · Confidentialité<br>© 2024 SNAPGRAM — ESCAPE EDITION</div>
+  </aside>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-avatar-big" id="modal-avatar">👤</div>
+      <div style="flex:1;"><div class="modal-username" id="modal-username"></div><div class="modal-fullname" id="modal-fullname"></div></div>
+      <button class="close-modal" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-stats">
+      <div class="modal-stat"><div class="modal-stat-num" id="modal-posts">0</div><div class="modal-stat-label">publications</div></div>
+      <div class="modal-stat"><div class="modal-stat-num" id="modal-followers">0</div><div class="modal-stat-label">abonnés</div></div>
+      <div class="modal-stat"><div class="modal-stat-num" id="modal-following">0</div><div class="modal-stat-label">abonnements</div></div>
+    </div>
+    <div class="modal-info" id="modal-info"></div>
+    <div class="modal-posts-grid" id="modal-grid"></div>
+    <button class="add-suspect-btn" id="add-suspect-btn" onclick="toggleSuspect()">＋ Ajouter aux suspects</button>
+  </div>
+</div>
+
+<!-- NOTEBOOK BUTTON -->
+<button class="notebook-btn" onclick="toggleNotebook()">📓 <span id="nb-count">0</span> suspect(s)</button>
+
+<!-- NOTEBOOK PANEL -->
+<div class="notebook-panel" id="notebook">
+  <div class="notebook-header">
+    📓 Carnet d'enquête
+    <button onclick="toggleNotebook()" style="background:none;border:none;cursor:pointer;font-size:16px;color:#1a1a00;">✕</button>
+  </div>
+  <div class="notebook-body">
+    <div class="notebook-section">
+      <div class="notebook-section-title">Suspects marqués</div>
+      <div id="suspects-list"><div class="notebook-empty">Aucun suspect ajouté</div></div>
+    </div>
+    <div class="notebook-section">
+      <div class="notebook-section-title">Indices observés — cochez ce que vous avez vu</div>
+      <div class="notebook-clue-row">
+        <div class="notebook-clue-check" id="nc1" onclick="tickClue('nc1')"></div>
+        <div class="notebook-clue-label" onclick="tickClue('nc1')">Messages copiés-collés identiques sur plusieurs posts</div>
+      </div>
+      <div class="notebook-clue-row">
+        <div class="notebook-clue-check" id="nc2" onclick="tickClue('nc2')"></div>
+        <div class="notebook-clue-label" onclick="tickClue('nc2')">Plusieurs comptes créés exactement la même date</div>
+      </div>
+      <div class="notebook-clue-row">
+        <div class="notebook-clue-check" id="nc3" onclick="tickClue('nc3')"></div>
+        <div class="notebook-clue-label" onclick="tickClue('nc3')">Commentaires postés à la même seconde</div>
+      </div>
+      <div class="notebook-clue-row">
+        <div class="notebook-clue-check" id="nc4" onclick="tickClue('nc4')"></div>
+        <div class="notebook-clue-label" onclick="tickClue('nc4')">0 publication et quasi aucun abonné</div>
+      </div>
+      <div class="notebook-clue-row">
+        <div class="notebook-clue-check" id="nc5" onclick="tickClue('nc5')"></div>
+        <div class="notebook-clue-label" onclick="tickClue('nc5')">Abonnements massifs (des milliers)</div>
+      </div>
+    </div>
+  </div>
+  <div class="notebook-footer">
+    <button class="notebook-validate-btn" onclick="validateSuspects()">🔍 Valider mes suspects</button>
+  </div>
+</div>
+
+<!-- RESULT OVERLAY -->
+<div class="result-overlay" id="result-overlay">
+  <div class="result-box">
+    <div class="result-title" id="result-title"></div>
+    <div class="result-text" id="result-text"></div>
+    <button class="result-close" onclick="document.getElementById('result-overlay').classList.remove('open')">Fermer</button>
+  </div>
+</div>
+
+<script>
+const REAL_BOTS = new Set(['claire.bnrd','marc.delacroix','lea.fontaine22','remi.pascal','julien.mrtn','nath.brvs']);
+const profiles = {
+  'marine_photos':   { avatar:'🌅', fullname:'Marine Dubois', posts:247, followers:'12.4K', following:381, isBot:false, thumbs:['🌅','🌊','🏖️','🌸','🌙','🏔️'], info:{'Localisation':'Nice, France','Compte créé':'14 mars 2019','Bio':'Photographe 📸 | contact@marine.fr'} },
+  'chef_antoine':    { avatar:'👨‍🍳', fullname:'Antoine Marchand', posts:512, followers:'8.7K', following:220, isBot:false, thumbs:['🍝','🥗','🍰','🥩','🍣','🥘'], info:{'Localisation':'Lyon','Compte créé':'2 juillet 2018','Bio':'Chef ⭐ Restaurant Le Perroquet Ivre'} },
+  'alex_explorer':   { avatar:'🗺️', fullname:'Alexandre Petit', posts:891, followers:'45.2K', following:512, isBot:false, thumbs:['⛩️','🗼','🏔️','🌋','🏝️','🌃'], info:{'Localisation':'En voyage...','Compte créé':'8 janvier 2017','Bio':'🌍 34 pays | Photographe voyageur'} },
+  'julia_travel':    { avatar:'✈️', fullname:'Julia Martin', posts:134, followers:'2.1K', following:890, isBot:false, thumbs:['✈️','🏖️','🌅','🎭','🗽','🍜'], info:{'Localisation':'Paris','Compte créé':'5 novembre 2020','Bio':'✈️ Passionnée de voyages'} },
+  'thomas_k':        { avatar:'🏄', fullname:'Thomas Karlen', posts:203, followers:'3.4K', following:512, isBot:false, thumbs:['🌊','🏄','🌅','🏖️','🤿','🐚'], info:{'Localisation':'Biarritz','Compte créé':'11 juin 2019','Bio':'🏄 Surf & Photo'} },
+  'sophie_m':        { avatar:'🌸', fullname:'Sophie Moreau', posts:89, followers:'1.2K', following:345, isBot:false, thumbs:['🌸','🍰','☕','🌷','🥗','📚'], info:{'Localisation':'Lyon','Compte créé':'20 avril 2021','Bio':'🌸 Foodie & lifestyle'} },
+  'pierre_gourmet':  { avatar:'🍷', fullname:'Pierre Gaultier', posts:156, followers:'4.2K', following:178, isBot:false, thumbs:['🍷','🧀','🥂','🍾','🥩','🫙'], info:{'Localisation':'Bordeaux','Compte créé':'29 août 2020','Bio':'🍷 Sommelier'} },
+  'camille_w':       { avatar:'🌺', fullname:'Camille Weber', posts:67, followers:892, following:634, isBot:false, thumbs:['🌺','🗼','🌍','📖','☕','🎨'], info:{'Localisation':'Paris','Compte créé':'3 mars 2022','Bio':'🌺 Voyageuse & étudiante'} },
+  'nicolas_v':       { avatar:'🎒', fullname:'Nicolas Vidal', posts:312, followers:'6.8K', following:290, isBot:false, thumbs:['🎒','🏔️','🌏','🕌','🦁','🌊'], info:{'Localisation':'Nomade','Compte créé':'17 septembre 2018','Bio':'📸 40 pays'} },
+  'claire.bnrd':     { avatar:'🙂', fullname:'Claire Bonnard', posts:0, followers:4, following:9200, isBot:true, thumbs:[], info:{'Compte créé':'3 janvier 2024','Dernière activité':'14:32:07','Publications':'0','Abonnés':'4','Abonnements':'9 200','Bio':'Suivez le lien en bio 🔥'} },
+  'marc.delacroix':  { avatar:'😊', fullname:'Marc Delacroix', posts:0, followers:2, following:11400, isBot:true, thumbs:[], info:{'Compte créé':'3 janvier 2024','Dernière activité':'15:14:07','Publications':'0','Abonnés':'2','Abonnements':'11 400','Bio':'10K abonnés garantis 🚀'} },
+  'lea.fontaine22':  { avatar:'🌸', fullname:'Léa Fontaine', posts:0, followers:3, following:8800, isBot:true, thumbs:[], info:{'Compte créé':'3 janvier 2024','Dernière activité':'15:14:07','Publications':'0','Abonnés':'3','Abonnements':'8 800','Bio':'Lien en bio pour gagner des abonnés'} },
+  'remi.pascal':     { avatar:'😄', fullname:'Rémi Pascal', posts:0, followers:0, following:5000, isBot:true, thumbs:[], info:{'Compte créé':'15 février 2024','Dernière activité':'16:05:22','Publications':'0','Abonnés':'0','Abonnements':'5 000','Bio':''} },
+  'julien.mrtn':     { avatar:'🙂', fullname:'Julien Martin', posts:0, followers:0, following:5001, isBot:true, thumbs:[], info:{'Compte créé':'15 février 2024','Dernière activité':'16:05:22','Publications':'0','Abonnés':'0','Abonnements':'5 001','Bio':''} },
+  'nath.brvs':       { avatar:'😊', fullname:'Nathalie Bervais', posts:0, followers:0, following:4998, isBot:true, thumbs:[], info:{'Compte créé':'15 février 2024','Dernière activité':'16:05:22','Publications':'0','Abonnés':'0','Abonnements':'4 998','Bio':''} },
+};
+
+let currentProfile = null;
+let suspects = new Set();
+let nbOpen = false;
+
+function toggleComments(id, btn) {
+  const s = document.getElementById(id);
+  s.classList.toggle('open');
+  btn.textContent = s.classList.contains('open') ? 'Masquer les commentaires' : 'Voir les ' + {c1:47,c2:31,c3:89}[id] + ' commentaires';
+}
+
+function openProfile(username) {
+  const p = profiles[username]; if (!p) return;
+  currentProfile = username;
+  document.getElementById('modal-avatar').textContent = p.avatar;
+  document.getElementById('modal-username').textContent = '@' + username;
+  document.getElementById('modal-fullname').textContent = p.fullname;
+  document.getElementById('modal-posts').textContent = p.posts;
+  document.getElementById('modal-followers').textContent = p.followers;
+  document.getElementById('modal-following').textContent = p.following;
+  const infoDiv = document.getElementById('modal-info');
+  infoDiv.innerHTML = '';
+  for (const [label, value] of Object.entries(p.info)) {
+    const row = document.createElement('div');
+    row.className = 'modal-info-row';
+    const highlight = (label === 'Compte créé' && p.isBot) || (label === 'Abonnements' && p.isBot) || (label === 'Publications' && p.isBot && value === '0');
+    row.innerHTML = `<span class="modal-info-label">${label}</span><span class="modal-info-value" style="${highlight ? 'color:#c0392b;font-weight:700;' : ''}">${value}</span>`;
+    infoDiv.appendChild(row);
+  }
+  const grid = document.getElementById('modal-grid');
+  grid.innerHTML = '';
+  if (p.thumbs && p.thumbs.length) {
+    p.thumbs.forEach(t => { const c = document.createElement('div'); c.className = 'modal-post-thumb'; c.textContent = t; grid.appendChild(c); });
+  } else if (p.posts === 0) {
+    const e = document.createElement('div'); e.style = 'padding:20px;text-align:center;color:#bbb;font-size:13px;grid-column:1/-1;'; e.textContent = 'Aucune publication'; grid.appendChild(e);
+  }
+  const btn = document.getElementById('add-suspect-btn');
+  btn.textContent = suspects.has(username) ? '✓ Dans mes suspects' : '＋ Ajouter aux suspects';
+  btn.className = 'add-suspect-btn' + (suspects.has(username) ? ' added' : '');
+  document.getElementById('modal').classList.add('open');
+}
+
+function toggleSuspect() {
+  if (!currentProfile) return;
+  const btn = document.getElementById('add-suspect-btn');
+  if (suspects.has(currentProfile)) {
+    suspects.delete(currentProfile);
+    btn.textContent = '＋ Ajouter aux suspects';
+    btn.className = 'add-suspect-btn';
+  } else {
+    suspects.add(currentProfile);
+    btn.textContent = '✓ Dans mes suspects';
+    btn.className = 'add-suspect-btn added';
+  }
+  renderSuspects();
+}
+
+function renderSuspects() {
+  const list = document.getElementById('suspects-list');
+  document.getElementById('nb-count').textContent = suspects.size;
+  if (suspects.size === 0) { list.innerHTML = '<div class="notebook-empty">Aucun suspect ajouté</div>'; return; }
+  list.innerHTML = '';
+  suspects.forEach(u => {
+    const row = document.createElement('div'); row.className = 'notebook-suspect-row';
+    const p = profiles[u];
+    row.innerHTML = `<span style="font-size:16px;">${p ? p.avatar : '👤'}</span><span class="notebook-suspect-name">@${u}</span><button class="notebook-remove" onclick="removeSuspect('${u}')">✕</button>`;
+    list.appendChild(row);
+  });
+}
+
+function removeSuspect(u) {
+  suspects.delete(u);
+  renderSuspects();
+  if (currentProfile === u) {
+    const btn = document.getElementById('add-suspect-btn');
+    btn.textContent = '＋ Ajouter aux suspects';
+    btn.className = 'add-suspect-btn';
+  }
+}
+
+function tickClue(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('ticked');
+  el.textContent = el.classList.contains('ticked') ? '✓' : '';
+}
+
+function toggleNotebook() {
+  nbOpen = !nbOpen;
+  document.getElementById('notebook').classList.toggle('open', nbOpen);
+}
+
+function validateSuspects() {
+  if (suspects.size === 0) { alert('Ajoutez au moins un suspect !'); return; }
+  const correct = [...suspects].filter(u => REAL_BOTS.has(u));
+  const wrong = [...suspects].filter(u => !REAL_BOTS.has(u));
+  const missed = [...REAL_BOTS].filter(u => !suspects.has(u));
+  let title, text;
+  if (correct.length === REAL_BOTS.size && wrong.length === 0) {
+    title = '🎉 Enquête résolue !';
+    text = `Bravo, vous avez identifié les ${REAL_BOTS.size} bots avec précision !\n\nLes suspects : ${[...REAL_BOTS].map(u=>'@'+u).join(', ')}\n\n🔑 Code de victoire : INFILTRATION`;
+  } else if (correct.length > 0 && wrong.length === 0 && missed.length > 0) {
+    title = '🔍 Presque...';
+    text = `Vous avez trouvé ${correct.length} bot(s) sur ${REAL_BOTS.size}. Continuez à chercher, il en reste ${missed.length} à identifier !`;
+  } else if (wrong.length > 0 && correct.length === REAL_BOTS.size) {
+    title = '⚠️ Attention !';
+    text = `Vous avez bien trouvé tous les bots, mais ${wrong.length} de vos suspects sont des vrais utilisateurs. Retirez les innocents !`;
+  } else {
+    title = '❌ Pas encore...';
+    text = `${correct.length} bot(s) correctement identifié(s), mais ${wrong.length} faux positif(s) et ${missed.length} bot(s) manquant(s). Analysez mieux les profils !`;
+  }
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-text').textContent = text;
+  document.getElementById('result-overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+</script>

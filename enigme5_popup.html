@@ -1,0 +1,738 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#scene{position:relative;width:100%;min-height:640px;background:#f2f2f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;border-radius:10px}
+#browser-chrome{background:#e8e8e5;border-bottom:1px solid #ccc;padding:6px 10px;display:flex;align-items:center;gap:8px}
+.bc-dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.bc-red{background:#ff5f57}.bc-yellow{background:#ffbd2e}.bc-green{background:#28c840}
+#url-bar{flex:1;background:#fff;border:1px solid #bbb;border-radius:20px;padding:3px 12px;font-size:12px;color:#333;display:flex;align-items:center;gap:6px}
+#site-header{background:#fff;border-bottom:1px solid #e0e0e0;padding:10px 20px;display:flex;align-items:center;justify-content:space-between}
+.site-logo{font-size:17px;font-weight:700;color:#c0392b}
+.site-logo span{color:#333}
+.site-nav{display:flex;gap:16px;font-size:12px}
+.site-nav a{color:#555;text-decoration:none}
+#hero{background:#1a1a2e;padding:24px 20px;color:#fff;text-align:center}
+#hero h1{font-size:19px;font-weight:700;margin-bottom:5px}
+#hero p{font-size:12px;color:#aaa;margin:0 auto 12px}
+.cta-hero{background:#e74c3c;color:#fff;border:none;padding:9px 20px;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer}
+#articles-grid{padding:14px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.article-card{background:#fff;border-radius:6px;border:1px solid #e5e5e5;overflow:hidden}
+.art-img{height:55px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.art-body{padding:7px 9px}
+.art-tag{font-size:9px;font-weight:700;text-transform:uppercase;color:#e74c3c;margin-bottom:2px}
+.art-title{font-size:11px;font-weight:600;color:#222;line-height:1.3;margin-bottom:2px}
+.art-meta{font-size:10px;color:#999}
+#site-footer-strip{background:#333;padding:7px 20px;display:flex;justify-content:space-between;align-items:center}
+#site-footer-strip p{font-size:10px;color:#888}
+
+#hud{position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.95);border:1px solid #ddd;border-radius:20px;padding:5px 14px;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+#hud-lives{display:flex;gap:4px;align-items:center}
+.life-heart{font-size:15px;transition:all 0.2s}
+.life-heart.lost{filter:grayscale(1);opacity:0.3}
+#hud-sep{width:1px;height:18px;background:#ddd}
+#hud-progress{font-size:11px;color:#555;white-space:nowrap}
+#hud-progress b{color:#1a1a2e}
+
+
+.popup{position:absolute;z-index:20;animation:popIn 0.2s ease-out}
+@keyframes popIn{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)}}
+.popup-chrome{background:#f0f0ee;border:1px solid #bbb;border-radius:8px;overflow:hidden}
+.pch-bar{background:#e2e2df;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none}
+.pch-title{font-weight:500;font-size:11px;color:#444}
+.pch-x{background:none;border:none;cursor:pointer;font-size:14px;color:#888;padding:1px 4px;border-radius:3px;line-height:1}
+.pch-x:hover{background:#ddd;color:#333}
+.pch-body{padding:13px 15px;background:#fff;font-size:12px;color:#333}
+.popup-ios{background:#fff;border-radius:14px;overflow:hidden;border:0.5px solid #ddd}
+.ios-body{padding:16px 16px 6px;text-align:center;cursor:move;user-select:none}
+.ios-title{font-size:14px;font-weight:600;color:#000;margin-bottom:5px}
+.ios-text{font-size:12px;color:#555;line-height:1.45}
+.ios-actions{display:grid}
+.ios-btn{background:none;border:none;color:#007aff;font-size:14px;padding:11px;cursor:pointer;width:100%;text-align:center;border-top:0.5px solid #ddd}
+.ios-btn:hover{background:#f5f5f5}
+.ios-btn.bold{font-weight:600}
+.popup-cookie{background:#fff;border-radius:8px;border:1px solid #ddd;overflow:hidden;font-size:12px}
+.cookie-top{padding:13px 15px 8px;cursor:move;user-select:none}
+.cookie-title{font-size:13px;font-weight:600;color:#222;margin-bottom:4px}
+.cookie-text{font-size:11px;color:#666;line-height:1.5}
+.cookie-actions{padding:6px 15px 12px;display:flex;gap:8px}
+.cookie-accept{flex:1;background:#1a73e8;color:#fff;border:none;padding:7px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer}
+.cookie-refuse{flex:1;background:#fff;color:#555;border:1px solid #ccc;padding:7px;border-radius:4px;font-size:12px;cursor:pointer}
+.popup-notif{background:#fff;border-radius:12px;border:0.5px solid #e0e0e0;padding:12px 13px;display:flex;gap:10px;align-items:flex-start}
+.notif-icon{width:34px;height:34px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px}
+.notif-body{flex:1;min-width:0;cursor:move;user-select:none}
+.notif-app{font-size:10px;color:#999;font-weight:500;text-transform:uppercase;letter-spacing:0.3px}
+.notif-title{font-size:13px;font-weight:600;color:#1a1a1a;margin:1px 0}
+.notif-text{font-size:11px;color:#666;line-height:1.4}
+.notif-actions{margin-top:7px;display:flex;gap:6px}
+.notif-btn{background:#f0f0f0;border:none;border-radius:6px;padding:5px 10px;font-size:11px;color:#333;cursor:pointer;font-weight:500}
+.notif-btn:hover{background:#e0e0e0}
+.notif-btn.primary{background:#007aff;color:#fff}
+.notif-btn.primary:hover{background:#0066dd}
+.notif-x{background:none;border:none;font-size:16px;color:#ccc;cursor:pointer;padding:0 0 0 4px;line-height:1}
+.notif-x:hover{color:#999}
+
+/* Nouveaux types */
+.popup-survey{background:#fff;border-radius:10px;border:1px solid #ddd;overflow:hidden}
+.survey-head{background:#4a90d9;padding:10px 14px;cursor:move;user-select:none;display:flex;justify-content:space-between;align-items:center}
+.survey-head span{color:#fff;font-size:12px;font-weight:600}
+.survey-body{padding:12px 14px;font-size:12px;color:#333}
+.survey-q{font-weight:600;margin-bottom:8px;line-height:1.4}
+.survey-btns{display:flex;gap:6px;margin-top:8px}
+
+.popup-antivirus{background:#fff;border-radius:8px;border:2px solid #e74c3c;overflow:hidden}
+.av-head{background:#e74c3c;padding:8px 12px;cursor:move;user-select:none;display:flex;justify-content:space-between;align-items:center}
+.av-head span{color:#fff;font-size:12px;font-weight:700}
+.av-body{padding:12px 14px;font-size:12px;color:#333;text-align:center}
+.av-icon{font-size:28px;margin-bottom:6px}
+.av-msg{font-weight:700;color:#c0392b;font-size:13px;margin-bottom:4px}
+.av-sub{font-size:11px;color:#666;margin-bottom:10px}
+
+.popup-reward{background:linear-gradient(135deg,#ff6b35,#f7c59f);border-radius:12px;overflow:hidden;border:none}
+.reward-inner{padding:16px;text-align:center;cursor:move;user-select:none}
+.reward-icon{font-size:32px;margin-bottom:6px}
+.reward-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;text-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.reward-sub{font-size:11px;color:rgba(255,255,255,0.85);margin-bottom:12px}
+.reward-btns{display:flex;gap:8px}
+
+.popup-gdpr{background:#fff;border-radius:0;border-top:3px solid #333;padding:14px 16px;font-size:11px;color:#444}
+.gdpr-title{font-size:13px;font-weight:700;color:#111;margin-bottom:5px}
+.gdpr-text{line-height:1.5;margin-bottom:10px;color:#555}
+.gdpr-links{font-size:10px;color:#1a73e8;margin-bottom:10px}
+.gdpr-btns{display:flex;gap:6px;flex-wrap:wrap}
+.gdpr-acc{background:#111;color:#fff;border:none;padding:7px 14px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer}
+.gdpr-more{background:#fff;color:#555;border:1px solid #ccc;padding:7px 10px;border-radius:4px;font-size:10px;cursor:pointer}
+.gdpr-ref{background:#fff;color:#999;border:none;padding:7px 6px;font-size:10px;cursor:pointer;text-decoration:underline}
+
+.popup-download-bar{background:#f8f8f8;border:1px solid #ddd;border-radius:6px;overflow:hidden;font-size:12px}
+.dl-bar-top{background:#e8e8e5;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none}
+.dl-bar-body{padding:10px 12px;display:flex;align-items:center;gap:10px}
+.dl-icon{font-size:22px}
+.dl-info{flex:1}
+.dl-name{font-weight:600;font-size:12px;color:#222}
+.dl-source{font-size:10px;color:#e74c3c}
+.dl-progress{height:4px;background:#e0e0e0;border-radius:2px;margin:4px 0}
+.dl-fill{height:4px;background:#4caf50;border-radius:2px;width:100%}
+.dl-btns{display:flex;gap:6px;margin-top:8px}
+
+.popup-captcha{background:#fff;border-radius:8px;border:1px solid #ddd;overflow:hidden}
+.cap-head{background:#f5f5f5;padding:8px 12px;border-bottom:1px solid #eee;cursor:move;user-select:none;display:flex;justify-content:space-between}
+.cap-head span{font-size:11px;font-weight:600;color:#333}
+.cap-body{padding:12px 14px;text-align:center}
+.cap-icon{font-size:28px;margin-bottom:6px}
+.cap-text{font-size:12px;color:#555;margin-bottom:10px;line-height:1.4}
+.cap-btns{display:flex;gap:8px}
+
+.popup-unsubscribe{background:#fff;border-radius:8px;border:1px solid #e5e5e5;overflow:hidden}
+.unsub-head{background:#f9f9f9;padding:8px 14px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none}
+.unsub-body{padding:12px 14px;font-size:12px}
+.unsub-title{font-weight:600;font-size:13px;margin-bottom:5px;color:#222}
+.unsub-text{color:#666;line-height:1.5;margin-bottom:10px}
+.unsub-btns{display:flex;gap:8px}
+
+#warn-flash{position:absolute;inset:0;background:rgba(220,38,38,0.18);z-index:60;pointer-events:none;display:none;border-radius:10px}
+#warn-toast{position:absolute;top:54px;left:50%;transform:translateX(-50%);background:#c0392b;color:#fff;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;z-index:70;display:none;white-space:nowrap;box-shadow:0 3px 12px rgba(0,0,0,0.2)}
+
+#gameover-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center;border-radius:10px}
+#gameover-overlay.show{display:flex}
+#gameover-box{background:#fff;border-radius:14px;padding:28px 32px;text-align:center;max-width:320px;width:90%}
+#gameover-box .go-icon{font-size:40px;margin-bottom:10px}
+#gameover-box h2{font-size:18px;font-weight:700;color:#c0392b;margin-bottom:8px}
+#gameover-box p{font-size:13px;color:#666;line-height:1.6;margin-bottom:18px}
+#gameover-box .go-btn{background:#1a1a2e;color:#fff;border:none;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+
+#win-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.82);z-index:100;align-items:center;justify-content:center;border-radius:10px}
+#win-overlay.show{display:flex}
+#win-box{background:#fff;border-radius:14px;padding:24px 28px;text-align:center;max-width:380px;width:92%}
+#win-box .win-top{font-size:36px;margin-bottom:8px}
+#win-box h2{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+#win-box .win-sub{font-size:12px;color:#888;margin-bottom:10px}
+#win-box .win-code{background:#f0faf5;border:2px dashed #27ae60;border-radius:8px;padding:10px 20px;margin:10px 0;font-size:22px;font-weight:700;color:#27ae60;letter-spacing:3px;font-family:monospace}
+#win-box .win-stats{display:flex;gap:8px;margin:12px 0}
+#win-box .stat-card{flex:1;background:#f8f8f8;border-radius:8px;padding:9px 4px;text-align:center}
+#win-box .stat-num{font-size:20px;font-weight:700;color:#1a1a1a}
+#win-box .stat-lbl{font-size:10px;color:#999;margin-top:2px}
+#win-box .lesson-title{font-size:12px;font-weight:700;color:#333;text-align:left;margin:10px 0 6px}
+#win-box .lesson-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
+#win-box .lesson-item{background:#f8f8f8;border-radius:6px;padding:7px;text-align:left;font-size:11px;color:#555;line-height:1.4}
+#win-box .lesson-item .li-tag{font-size:9px;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:2px}
+#win-box .replay-btn{background:#1a1a2e;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+</style>
+
+<div id="scene">
+  <div id="browser-chrome">
+    <span class="bc-dot bc-red"></span><span class="bc-dot bc-yellow"></span><span class="bc-dot bc-green"></span>
+    <div id="url-bar"><span style="color:#2a9d2a;font-size:11px">🔒</span><span style="font-size:12px;color:#333">www.l-actu-du-jour.fr — Actualités, Sport, Économie</span></div>
+  </div>
+  <div id="site-header">
+    <div class="site-logo">L'Actu<span>DuJour</span></div>
+    <div class="site-nav"><a href="#">France</a><a href="#">Sport</a><a href="#">Tech</a><a href="#">Économie</a></div>
+  </div>
+  <div id="hero">
+    <h1>Toute l'actualité en temps réel</h1>
+    <p>Restez informé · 2 millions de lecteurs chaque jour</p>
+    <button class="cta-hero">Voir les dernières infos</button>
+  </div>
+  <div id="articles-grid">
+    <div class="article-card"><div class="art-img" style="background:#1a3a5c;color:#aaccee">⚽ SPORT</div><div class="art-body"><div class="art-tag">Sport</div><div class="art-title">Ligue des Champions : résultats de la soirée</div><div class="art-meta">Il y a 23 min</div></div></div>
+    <div class="article-card"><div class="art-img" style="background:#1a4a2a;color:#aaeec0">📈 ÉCO</div><div class="art-body"><div class="art-tag">Économie</div><div class="art-title">Le prix de l'énergie repart à la hausse</div><div class="art-meta">Il y a 1 h</div></div></div>
+    <div class="article-card"><div class="art-img" style="background:#2a1a4a;color:#ccaaee">💻 TECH</div><div class="art-body"><div class="art-tag">Technologie</div><div class="art-title">Meta annonce de nouvelles restrictions</div><div class="art-meta">Il y a 2 h</div></div></div>
+    <div class="article-card"><div class="art-img" style="background:#4a2a1a;color:#eebbaa">🏥 SANTÉ</div><div class="art-body"><div class="art-tag">Santé</div><div class="art-title">Ce médicament serait sous-dosé selon des experts</div><div class="art-meta">Il y a 3 h</div></div></div>
+  </div>
+  <div id="site-footer-strip">
+    <p>© 2025 L'ActuDuJour · Mentions légales · CGU · Données personnelles</p>
+  </div>
+
+  <div id="hud">
+    <div id="hud-lives">
+      <span class="life-heart" id="h1">❤️</span>
+      <span class="life-heart" id="h2">❤️</span>
+      <span class="life-heart" id="h3">❤️</span>
+    </div>
+    <div id="hud-sep"></div>
+    <div id="hud-progress">Pop-ups : <b id="prog-closed">0</b> / <b>30</b></div>
+  </div>
+
+
+  <div id="warn-flash"></div>
+  <div id="warn-toast"></div>
+
+  <div id="gameover-overlay">
+    <div id="gameover-box">
+      <div class="go-icon">💀</div>
+      <h2>Tu t'es fait piéger !</h2>
+      <p id="go-msg">Tu as cliqué 3 fois sur de faux boutons.<br>Les pirates comptent là-dessus !</p>
+      <button class="go-btn" onclick="resetGame()">Recommencer</button>
+    </div>
+  </div>
+
+  <div id="win-overlay">
+    <div id="win-box">
+      <div class="win-top">🏆</div>
+      <h2>Bravo, mission accomplie !</h2>
+      <div class="win-sub">Tu as fermé les 30 pop-ups sans te faire piéger une seule fois. Le code :</div>
+      <div class="win-code">VIGILANT</div>
+      <div class="win-stats">
+        <div class="stat-card"><div class="stat-num" id="stat-traps" style="color:#e74c3c">0</div><div class="stat-lbl">pièges évités</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-lives" style="color:#27ae60">0</div><div class="stat-lbl">vies restantes</div></div>
+      </div>
+      <div class="lesson-title">Ce que tu viens d'apprendre :</div>
+      <div class="lesson-grid">
+        <div class="lesson-item"><div class="li-tag">Cookies</div>Les sites cachent le bouton "refuser" pour que tu acceptes vite</div>
+        <div class="lesson-item"><div class="li-tag">Faux colis</div>Un vrai transporteur ne demande jamais de paiement par SMS</div>
+        <div class="lesson-item"><div class="li-tag">Mise à jour</div>Tes mises à jour viennent de ton OS, pas d'un site web</div>
+        <div class="lesson-item"><div class="li-tag">Vigilance</div>Toujours lire avant de cliquer, même sur un bouton "Fermer"</div>
+      </div>
+      <button class="replay-btn" onclick="resetGame()">Rejouer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOTAL=30,MAX_LIVES=3,SPAWN_MS=1400;
+
+let lives=MAX_LIVES,closed=0,traps=0,spawned=0,active=0,gameOver=false;
+let spawnTimer=null;
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+const popupDefs=[
+
+  // --- COOKIES ---
+  {w:320,make:()=>`<div class="popup-cookie">
+    <div class="cookie-top"><div class="cookie-title">Ce site utilise des cookies</div>
+    <div class="cookie-text">Nous et 287 partenaires utilisons des cookies pour personnaliser les publicités et améliorer votre expérience.</div></div>
+    <div class="cookie-actions">
+      <button class="cookie-accept" onclick="trapBtn(this)">Tout accepter</button>
+      <button class="cookie-refuse" onclick="goodBtn(this)">Refuser</button>
+    </div></div>`},
+
+  // Cookie avec "refuser" minuscule et caché
+  {w:320,make:()=>`<div class="popup-cookie">
+    <div class="cookie-top"><div class="cookie-title">🍪 Paramètres de confidentialité</div>
+    <div class="cookie-text">Votre expérience est meilleure avec nos cookies. Nos 312 partenaires en bénéficieront aussi.</div></div>
+    <div class="cookie-actions">
+      <button class="cookie-accept" onclick="trapBtn(this)">Accepter et continuer</button>
+      <button class="cookie-refuse" onclick="goodBtn(this)" style="font-size:9px;color:#bbb;border-color:#eee">tout refuser</button>
+    </div></div>`},
+
+  // GDPR style compliqué
+  {w:330,make:()=>`<div class="popup-gdpr">
+    <div class="gdpr-title">Votre vie privée nous tient à cœur</div>
+    <div class="gdpr-text">Nous utilisons des technologies de suivi pour personnaliser le contenu et les publicités, pour fournir des fonctionnalités de réseaux sociaux et pour analyser notre trafic.</div>
+    <div class="gdpr-links">Politique de confidentialité · Partenaires publicitaires · Préférences</div>
+    <div class="gdpr-btns">
+      <button class="gdpr-acc" onclick="trapBtn(this)">Tout accepter</button>
+      <button class="gdpr-more" onclick="trapBtn(this)">Gérer mes choix</button>
+      <button class="gdpr-ref" onclick="goodBtn(this)">continuer sans accepter</button>
+    </div></div>`},
+
+  // --- NOTIFICATIONS ---
+  {w:270,make:()=>`<div class="popup-ios">
+    <div class="ios-body"><div class="ios-title">"L'ActuDuJour" veut envoyer des notifications</div>
+    <div class="ios-text" style="margin-top:4px;font-size:11px;color:#777">Alertes infos, résultats sportifs en direct.</div></div>
+    <div class="ios-actions">
+      <button class="ios-btn" onclick="goodBtn(this)">Ne pas autoriser</button>
+      <button class="ios-btn bold" onclick="trapBtn(this)">Autoriser</button>
+    </div></div>`},
+
+  // --- FAUX COLIS ---
+  {w:300,make:()=>`<div class="popup-notif">
+    <div class="notif-icon" style="background:#fff0e0">📦</div>
+    <div class="notif-body"><div class="notif-app">Livraison · maintenant</div>
+    <div class="notif-title">Votre colis est bloqué</div>
+    <div class="notif-text">Frais de douane impayés : 1,99 €. Cliquez pour régulariser.</div>
+    <div class="notif-actions">
+      <button class="notif-btn primary" onclick="trapBtn(this)">Payer 1,99 €</button>
+      <button class="notif-btn" onclick="goodBtn(this)">Ignorer</button>
+    </div></div>
+    <button class="notif-x" onclick="goodBtn(this)">×</button></div>`},
+
+  // --- MISE À JOUR ---
+  {w:300,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar"><span class="pch-title">Mise à jour disponible</span><button class="pch-x" onclick="goodBtn(this)">×</button></div>
+    <div class="pch-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:30px;height:30px;border-radius:6px;background:#e8f4fd;display:flex;align-items:center;justify-content:center;font-size:17px">🔵</div>
+        <div><div style="font-weight:600;font-size:13px">Google Chrome</div><div style="color:#888;font-size:11px">Version 123 → 124</div></div>
+      </div>
+      <div style="color:#555;font-size:12px;line-height:1.5;margin-bottom:11px">Mise à jour de sécurité critique. Redémarre pour protéger tes données.</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="trapBtn(this)" style="flex:1;background:#1a73e8;color:#fff;border:none;padding:7px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Mettre à jour</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#555;border:1px solid #ddd;padding:7px 12px;border-radius:4px;font-size:12px;cursor:pointer">Plus tard</button>
+      </div>
+    </div></div>`},
+
+  // --- OFFRE EXPIRANTE ---
+  {w:285,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar" style="background:#fdf0e0"><span class="pch-title" style="color:#a05000">⏰ Offre — expire dans 04:59</span><button class="pch-x" onclick="goodBtn(this)">×</button></div>
+    <div class="pch-body">
+      <div style="text-align:center;margin-bottom:9px">
+        <div style="font-size:20px;font-weight:700;color:#e74c3c">–70%</div>
+        <div style="font-size:12px;font-weight:600">Abonnement Premium</div>
+        <div style="color:#888;font-size:11px;text-decoration:line-through">9,99 €/mois</div>
+        <div style="color:#e74c3c;font-size:14px;font-weight:700">2,99 €/mois</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="trapBtn(this)" style="flex:1;background:#e74c3c;color:#fff;border:none;padding:7px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Je profite</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#999;border:1px solid #ddd;padding:7px 12px;border-radius:4px;font-size:11px;cursor:pointer">Non merci</button>
+      </div>
+    </div></div>`},
+
+  // --- ALERTE BANQUE ---
+  {w:300,make:()=>`<div class="popup-notif">
+    <div class="notif-icon" style="background:#e8f8e8">🏦</div>
+    <div class="notif-body"><div class="notif-app">Banque Alerte · 1 min</div>
+    <div class="notif-title">Connexion inhabituelle</div>
+    <div class="notif-text">Connexion depuis Berlin (DE). Confirmez-vous être vous ?</div>
+    <div class="notif-actions">
+      <button class="notif-btn primary" onclick="trapBtn(this)">C'est moi</button>
+      <button class="notif-btn" onclick="goodBtn(this)">Signaler</button>
+    </div></div>
+    <button class="notif-x" onclick="goodBtn(this)">×</button></div>`},
+
+  // --- FAUX FICHIER ---
+  {w:310,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar"><span class="pch-title">Téléchargement terminé</span><button class="pch-x" onclick="goodBtn(this)">×</button></div>
+    <div class="pch-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:24px">📦</div>
+        <div><div style="font-weight:600;font-size:12px">LecteurPDF_Gratuit_Setup.exe</div><div style="color:#e74c3c;font-size:11px">pdf-gratuit-online.com · 4,2 Mo</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="trapBtn(this)" style="flex:1;background:#4caf50;color:#fff;border:none;padding:7px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Ouvrir le fichier</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#555;border:1px solid #ddd;padding:7px 12px;border-radius:4px;font-size:12px;cursor:pointer">Annuler</button>
+      </div>
+    </div></div>`},
+
+  // --- SESSION EXPIRÉE ---
+  {w:270,make:()=>`<div class="popup-ios">
+    <div class="ios-body"><div class="ios-title">Votre session va expirer</div>
+    <div class="ios-text" style="margin-top:4px;font-size:12px;color:#666">Restez connecté pour ne pas perdre vos préférences.</div></div>
+    <div class="ios-actions">
+      <button class="ios-btn" onclick="goodBtn(this)">Se déconnecter</button>
+      <button class="ios-btn bold" onclick="trapBtn(this)">Rester connecté</button>
+    </div></div>`},
+
+  // --- BON DE RÉDUCTION ---
+  {w:300,make:()=>`<div class="popup-notif">
+    <div class="notif-icon" style="background:#f0e8ff">🎁</div>
+    <div class="notif-body"><div class="notif-app">Récompense · maintenant</div>
+    <div class="notif-title">Tu as gagné un bon de réduction !</div>
+    <div class="notif-text">50 € offerts sur ta prochaine commande. Valable 10 minutes.</div>
+    <div class="notif-actions">
+      <button class="notif-btn primary" onclick="trapBtn(this)">Réclamer</button>
+      <button class="notif-btn" onclick="goodBtn(this)">Ignorer</button>
+    </div></div>
+    <button class="notif-x" onclick="goodBtn(this)">×</button></div>`},
+
+  // --- PARTAGE DE DONNÉES ---
+  {w:320,make:()=>`<div class="popup-cookie">
+    <div class="cookie-top"><div class="cookie-title">Votre avis compte !</div>
+    <div class="cookie-text">Aidez-nous à améliorer le site en partageant vos données de navigation avec nos équipes et partenaires.</div></div>
+    <div class="cookie-actions">
+      <button class="cookie-accept" onclick="trapBtn(this)">Partager mes données</button>
+      <button class="cookie-refuse" onclick="goodBtn(this)">Non merci</button>
+    </div></div>`},
+
+  // ======= NOUVEAUX TYPES =======
+
+  // --- ANTIVIRUS ALARMISTE ---
+  {w:290,make:()=>`<div class="popup-antivirus">
+    <div class="av-head"><span>⚠️ ALERTE SÉCURITÉ</span><button class="pch-x" style="color:#fff;filter:invert(1)" onclick="goodBtn(this)">×</button></div>
+    <div class="av-body">
+      <div class="av-icon">🦠</div>
+      <div class="av-msg">3 virus détectés sur votre appareil !</div>
+      <div class="av-sub">Votre appareil est en danger. Nettoyez-le immédiatement avant que vos données soient volées.</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button onclick="trapBtn(this)" style="flex:1;background:#e74c3c;color:#fff;border:none;padding:8px;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;animation:pulse 1s infinite">🛡️ Nettoyer maintenant</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#aaa;border:1px solid #ddd;padding:8px 10px;border-radius:5px;font-size:11px;cursor:pointer">Ignorer</button>
+      </div>
+    </div></div>`},
+
+  // --- SONDAGE PIÈGE ---
+  {w:300,make:()=>`<div class="popup-survey">
+    <div class="survey-head"><span>📊 Sondage rapide</span><button class="pch-x" style="color:#fff;background:none;border:none;cursor:pointer;font-size:14px" onclick="goodBtn(this)">×</button></div>
+    <div class="survey-body">
+      <div class="survey-q">Êtes-vous satisfait de votre expérience sur ce site ?</div>
+      <div style="font-size:11px;color:#888;margin-bottom:8px">En participant, vous acceptez de recevoir nos offres partenaires.</div>
+      <div class="survey-btns">
+        <button onclick="trapBtn(this)" style="flex:1;background:#4a90d9;color:#fff;border:none;padding:7px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Oui, participer</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#888;border:1px solid #ddd;padding:7px 10px;border-radius:4px;font-size:11px;cursor:pointer">Non</button>
+      </div>
+    </div></div>`},
+
+  // --- RÉCOMPENSE GRADIENT ---
+  {w:260,make:()=>`<div class="popup-reward">
+    <div class="reward-inner">
+      <div class="reward-icon">🏆</div>
+      <div class="reward-title">Félicitations !</div>
+      <div class="reward-sub">Tu es le 1 000 000ème visiteur.<br>Réclame ton iPhone 15 gratuit !</div>
+      <div class="reward-btns">
+        <button onclick="trapBtn(this)" style="flex:1;background:#fff;color:#ff6b35;border:none;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer">🎉 Réclamer</button>
+        <button onclick="goodBtn(this)" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.5);padding:8px 12px;border-radius:20px;font-size:11px;cursor:pointer">Non</button>
+      </div>
+    </div></div>`},
+
+  // --- BARRE DE TÉLÉCHARGEMENT ---
+  {w:310,make:()=>`<div class="popup-download-bar">
+    <div class="dl-bar-top"><span style="font-size:11px;font-weight:600;color:#444">Téléchargement</span><button class="pch-x" onclick="goodBtn(this)">×</button></div>
+    <div class="dl-bar-body">
+      <div class="dl-icon">📄</div>
+      <div class="dl-info">
+        <div class="dl-name">Flash_Player_Update.exe</div>
+        <div class="dl-source">flashplayer-update.net</div>
+        <div class="dl-progress"><div class="dl-fill"></div></div>
+        <div class="dl-btns">
+          <button onclick="trapBtn(this)" style="background:#4caf50;color:#fff;border:none;padding:5px 12px;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer">Exécuter</button>
+          <button onclick="goodBtn(this)" style="background:#fff;color:#888;border:1px solid #ddd;padding:5px 10px;border-radius:3px;font-size:11px;cursor:pointer">Supprimer</button>
+        </div>
+      </div>
+    </div></div>`},
+
+  // --- CAPTCHA PIÈGE ---
+  {w:280,make:()=>`<div class="popup-captcha">
+    <div class="cap-head"><span>Vérification de sécurité</span><button class="pch-x" onclick="goodBtn(this)">×</button></div>
+    <div class="cap-body">
+      <div class="cap-icon">🤖</div>
+      <div class="cap-text">Prouvez que vous n'êtes pas un robot pour continuer la lecture de l'article.</div>
+      <div class="cap-btns" style="justify-content:center">
+        <button onclick="trapBtn(this)" style="flex:1;background:#1a73e8;color:#fff;border:none;padding:8px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer">Je ne suis pas un robot ✓</button>
+      </div>
+      <div style="font-size:9px;color:#bbb;margin-top:6px">En cliquant, vous autorisez l'accès à votre géolocalisation</div>
+    </div></div>`},
+
+  // --- DÉSINSCRIPTION INVERSÉE ---
+  {w:300,make:()=>`<div class="popup-unsubscribe">
+    <div class="unsub-head"><span style="font-size:11px;font-weight:600;color:#333">Gérer mes préférences</span><button class="pch-x" onclick="goodBtn(this)">×</button></div>
+    <div class="unsub-body">
+      <div class="unsub-title">Vous êtes abonné à nos alertes</div>
+      <div class="unsub-text">Ne manquez aucune actualité ! Restez abonné pour continuer à recevoir nos newsletters personnalisées.</div>
+      <div class="unsub-btns">
+        <button onclick="goodBtn(this)" style="background:#fff;color:#e74c3c;border:1px solid #e74c3c;padding:7px 12px;border-radius:4px;font-size:11px;cursor:pointer">Me désabonner</button>
+        <button onclick="trapBtn(this)" style="flex:1;background:#1a73e8;color:#fff;border:none;padding:7px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Rester abonné</button>
+      </div>
+    </div></div>`},
+
+  // --- FAUSSE ALERTE APPLE ---
+  {w:270,make:()=>`<div class="popup-ios">
+    <div class="ios-body"><div class="ios-title">Apple ID : action requise</div>
+    <div class="ios-text" style="margin-top:4px;font-size:12px;color:#666">Votre compte a été temporairement limité. Vérifiez vos informations pour le réactiver.</div></div>
+    <div class="ios-actions">
+      <button class="ios-btn" onclick="goodBtn(this)">Ignorer</button>
+      <button class="ios-btn bold" onclick="trapBtn(this)">Vérifier mon compte</button>
+    </div></div>`},
+
+  // --- POPUP "FERMER" PIÉGÉ ---
+  {w:295,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar"><span class="pch-title">Publicité</span><button class="pch-x" onclick="trapBtn(this)">×</button></div>
+    <div class="pch-body" style="text-align:center">
+      <div style="font-size:11px;color:#888;margin-bottom:8px">Annonce sponsorisée</div>
+      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:4px">Perdez 10 kg en 2 semaines !</div>
+      <div style="font-size:11px;color:#666;margin-bottom:10px">La méthode que les médecins ne veulent pas que vous connaissiez.</div>
+      <button onclick="goodBtn(this)" style="background:#fff;color:#aaa;border:1px solid #eee;padding:6px 14px;border-radius:4px;font-size:11px;cursor:pointer">Ne plus afficher</button>
+    </div></div>`},
+
+  // --- FAUX SUPPORT MICROSOFT ---
+  {w:310,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar" style="background:#0078d4"><span class="pch-title" style="color:#fff">⚠️ Support Microsoft Windows</span><button class="pch-x" style="color:#fff;background:none;border:none;cursor:pointer;font-size:14px" onclick="goodBtn(this)">×</button></div>
+    <div class="pch-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:24px">🪟</div>
+        <div><div style="font-weight:600;font-size:12px;color:#c0392b">ERREUR CRITIQUE DÉTECTÉE</div><div style="color:#888;font-size:11px">Votre PC est infecté · Code : 0x80070057</div></div>
+      </div>
+      <div style="font-size:11px;color:#555;margin-bottom:10px">Appelez le support Microsoft immédiatement ou cliquez ci-dessous pour une réparation automatique.</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="trapBtn(this)" style="flex:1;background:#0078d4;color:#fff;border:none;padding:7px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Réparer maintenant</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#555;border:1px solid #ddd;padding:7px 10px;border-radius:4px;font-size:12px;cursor:pointer">Fermer</button>
+      </div>
+    </div></div>`},
+
+  // --- FAUX SONDAGE OPINION ---
+  {w:300,make:()=>`<div class="popup-survey">
+    <div class="survey-head" style="background:#27ae60"><span>🗳️ Votre opinion nous intéresse</span><button class="pch-x" style="color:#fff;background:none;border:none;cursor:pointer;font-size:14px" onclick="goodBtn(this)">×</button></div>
+    <div class="survey-body">
+      <div class="survey-q">Pensez-vous que les gouvernements font assez contre la désinformation ?</div>
+      <div class="survey-btns" style="flex-wrap:wrap">
+        <button onclick="trapBtn(this)" style="flex:1;background:#27ae60;color:#fff;border:none;padding:7px;border-radius:4px;font-size:11px;cursor:pointer">Voter et voir les résultats</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#aaa;border:none;padding:7px;border-radius:4px;font-size:10px;cursor:pointer;text-decoration:underline">Passer</button>
+      </div>
+    </div></div>`},
+
+  // --- ACCÈS PREMIUM DÉGUISÉ ---
+  {w:290,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar"><span class="pch-title">Contenu réservé</span><button class="pch-x" onclick="goodBtn(this)">×</button></div>
+    <div class="pch-body" style="text-align:center">
+      <div style="font-size:26px;margin-bottom:8px">🔒</div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:4px">Cet article est réservé aux abonnés</div>
+      <div style="font-size:11px;color:#888;margin-bottom:10px">Accès illimité à partir de 1 € le premier mois</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="trapBtn(this)" style="flex:1;background:#e74c3c;color:#fff;border:none;padding:7px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">S'abonner</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#888;border:1px solid #eee;padding:7px 10px;border-radius:4px;font-size:11px;cursor:pointer">Plus tard</button>
+      </div>
+    </div></div>`},
+
+  // --- NOTIFICATION WHATSAPP PIÉGÉE ---
+  {w:305,make:()=>`<div class="popup-notif">
+    <div class="notif-icon" style="background:#dcf8c6">💬</div>
+    <div class="notif-body"><div class="notif-app">WhatsApp · maintenant</div>
+    <div class="notif-title">Vous avez un nouveau message</div>
+    <div class="notif-text">Votre famille vous a envoyé une vidéo importante à regarder.</div>
+    <div class="notif-actions">
+      <button class="notif-btn primary" onclick="trapBtn(this)">Voir le message</button>
+      <button class="notif-btn" onclick="goodBtn(this)">Ignorer</button>
+    </div></div>
+    <button class="notif-x" onclick="goodBtn(this)">×</button></div>`},
+
+  // --- FAUSSE DOUBLE NÉGATION ---
+  {w:290,make:()=>`<div class="popup-ios">
+    <div class="ios-body">
+      <div class="ios-title">Désactiver les publicités ?</div>
+      <div class="ios-text" style="font-size:11px;color:#666;margin-top:4px">Ne pas désactiver les publicités permettrait de ne pas nuire à notre financement.</div>
+    </div>
+    <div class="ios-actions">
+      <button class="ios-btn" onclick="goodBtn(this)">Ne pas désactiver</button>
+      <button class="ios-btn bold" onclick="trapBtn(this)">Désactiver</button>
+    </div></div>`},
+
+  // --- FAUX AVIS LÉGAL ---
+  {w:320,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar" style="background:#333"><span class="pch-title" style="color:#fff">📋 Mise à jour des conditions</span><button class="pch-x" style="color:#aaa;background:none;border:none;cursor:pointer;font-size:14px" onclick="goodBtn(this)">×</button></div>
+    <div class="pch-body">
+      <div style="font-size:11px;color:#666;line-height:1.6;margin-bottom:10px">Nous avons mis à jour nos Conditions Générales d'Utilisation et notre Politique de Confidentialité. En continuant à utiliser ce service, vous acceptez automatiquement le partage de vos données avec nos 847 partenaires.</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="trapBtn(this)" style="flex:1;background:#333;color:#fff;border:none;padding:7px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Continuer</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#888;border:1px solid #ddd;padding:7px 10px;border-radius:4px;font-size:11px;cursor:pointer">Refuser et quitter</button>
+      </div>
+    </div></div>`},
+
+  // --- FAUSSE ALERTE GPS ---
+  {w:270,make:()=>`<div class="popup-ios">
+    <div class="ios-body">
+      <div class="ios-title">Activer la localisation ?</div>
+      <div class="ios-text" style="font-size:11px;color:#666;margin-top:4px">Ce site souhaite accéder à votre position pour vous afficher les actualités locales.</div>
+    </div>
+    <div class="ios-actions">
+      <button class="ios-btn" onclick="goodBtn(this)">Refuser</button>
+      <button class="ios-btn bold" onclick="trapBtn(this)">Autoriser une fois</button>
+    </div></div>`},
+
+  // --- BOUTON "FERMER" DÉPLACÉ ---
+  {w:300,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar"><span class="pch-title">Offre exclusive membre</span>
+      <button style="background:none;border:1px solid #ccc;cursor:pointer;font-size:9px;color:#aaa;padding:2px 5px;border-radius:3px;line-height:1" onclick="goodBtn(this)">fermer</button>
+    </div>
+    <div class="pch-body" style="text-align:center">
+      <div style="font-size:22px;margin-bottom:6px">💎</div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:4px">Offre VIP — 3 mois offerts !</div>
+      <div style="font-size:11px;color:#888;margin-bottom:10px">Sans engagement. Sans carte bancaire.</div>
+      <button onclick="trapBtn(this)" style="width:100%;background:#ff9800;color:#fff;border:none;padding:8px;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer">Activer mon offre VIP</button>
+    </div></div>`},
+
+  // --- FAUX RÉSULTAT MÉDICAL ---
+  {w:300,make:()=>`<div class="popup-notif">
+    <div class="notif-icon" style="background:#ffe8e8">🩺</div>
+    <div class="notif-body"><div class="notif-app">SantéPlus · maintenant</div>
+    <div class="notif-title">Résultats de votre test disponibles</div>
+    <div class="notif-text">Vos résultats d'analyse sont disponibles. Connectez-vous pour les consulter.</div>
+    <div class="notif-actions">
+      <button class="notif-btn primary" onclick="trapBtn(this)">Voir mes résultats</button>
+      <button class="notif-btn" onclick="goodBtn(this)">Ignorer</button>
+    </div></div>
+    <button class="notif-x" onclick="goodBtn(this)">×</button></div>`},
+
+  // --- FAUSSE INVITATION ---
+  {w:290,make:()=>`<div class="popup-ios">
+    <div class="ios-body">
+      <div class="ios-title">Invitation reçue</div>
+      <div class="ios-text" style="font-size:11px;color:#444;margin-top:4px">Marie Dupont vous a invité à rejoindre son groupe privé "Bons Plans France 2025".</div>
+    </div>
+    <div class="ios-actions">
+      <button class="ios-btn" onclick="goodBtn(this)">Refuser</button>
+      <button class="ios-btn bold" onclick="trapBtn(this)">Rejoindre le groupe</button>
+    </div></div>`},
+
+  // --- OBSCURED X (très petit ×) ---
+  {w:295,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar" style="background:#1a1a2e"><span class="pch-title" style="color:#aaa;font-size:10px">ActuDuJour — Partenaire</span>
+      <button style="background:none;border:none;cursor:pointer;font-size:8px;color:#444;line-height:1;padding:1px 2px" onclick="goodBtn(this)">✕</button>
+    </div>
+    <div class="pch-body" style="text-align:center;padding:14px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px">🎰 Tu as été sélectionné !</div>
+      <div style="font-size:11px;color:#666;margin-bottom:10px">Tente ta chance et gagne jusqu'à 500 € en cash.</div>
+      <button onclick="trapBtn(this)" style="width:100%;background:linear-gradient(90deg,#f7c59f,#ff6b35);color:#fff;border:none;padding:8px;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer">Tenter ma chance !</button>
+    </div></div>`},
+
+  // --- FAUX RAPPEL ABONNEMENT ---
+  {w:310,make:()=>`<div class="popup-chrome">
+    <div class="pch-bar"><span class="pch-title">Rappel abonnement</span><button class="pch-x" onclick="goodBtn(this)">×</button></div>
+    <div class="pch-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:22px">📧</div>
+        <div><div style="font-weight:600;font-size:12px">Votre abonnement expire demain</div><div style="color:#e74c3c;font-size:11px">Renouvelez pour continuer sans interruption</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="trapBtn(this)" style="flex:1;background:#e74c3c;color:#fff;border:none;padding:7px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">Renouveler 9,99 €</button>
+        <button onclick="goodBtn(this)" style="background:#fff;color:#555;border:1px solid #ddd;padding:7px 10px;border-radius:4px;font-size:12px;cursor:pointer">Annuler</button>
+      </div>
+    </div></div>`},
+
+];
+
+function spawnOne(){
+  if(gameOver||spawned>=TOTAL) return;
+  const scene=document.getElementById('scene');
+  const sw=scene.offsetWidth,sh=scene.offsetHeight;
+  const def=popupDefs[rand(0,popupDefs.length-1)];
+  const wrap=document.createElement('div');
+  wrap.className='popup';
+  wrap.innerHTML=def.make();
+  wrap.style.width=def.w+'px';
+  wrap.style.left=rand(8,Math.max(8,sw-def.w-8))+'px';
+  wrap.style.top=rand(52,Math.max(52,sh-200))+'px';
+  makeDraggable(wrap);
+  scene.appendChild(wrap);
+  spawned++;active++;
+}
+
+function removePopup(el){
+  const p=el.closest('.popup');
+  if(!p) return;
+  p.style.transition='opacity 0.15s,transform 0.15s';
+  p.style.opacity='0';p.style.transform='scale(0.88)';
+  setTimeout(()=>{p.remove();active=Math.max(0,active-1);},150);
+}
+
+function goodBtn(btn){
+  if(gameOver) return;
+  removePopup(btn);
+  closed++;
+  document.getElementById('prog-closed').textContent=closed;
+  if(closed>=TOTAL) winGame();
+}
+
+function trapBtn(btn){
+  if(gameOver) return;
+  removePopup(btn);
+  traps++;lives--;
+  updateHearts();showWarning();
+  if(lives<=0){ triggerGameOver(); return; }
+  // Repart à 0 : efface tout et relance le spawn
+  setTimeout(()=>{
+    document.querySelectorAll('.popup').forEach(p=>p.remove());
+    closed=0; spawned=0; active=0;
+    document.getElementById('prog-closed').textContent='0';
+    clearInterval(spawnTimer);
+    for(let i=0;i<3;i++) setTimeout(()=>spawnOne(),i*400);
+    spawnTimer=setInterval(()=>{
+      if(!gameOver&&spawned<TOTAL) spawnOne();
+      if(spawned>=TOTAL) clearInterval(spawnTimer);
+    },SPAWN_MS);
+  },300);
+}
+
+function updateHearts(){
+  for(let i=1;i<=3;i++) document.getElementById('h'+i).classList.toggle('lost',i>lives);
+}
+
+function showWarning(){
+  const flash=document.getElementById('warn-flash');
+  const toast=document.getElementById('warn-toast');
+  toast.textContent=lives>0
+    ? `Piège cliqué ! Il te reste ${lives} vie${lives>1?'s':''}`
+    : `Dernier piège — game over !`;
+  flash.style.display='block';toast.style.display='block';
+  setTimeout(()=>{flash.style.display='none';toast.style.display='none';},2200);
+}
+
+function triggerGameOver(){
+  gameOver=true;
+  clearInterval(spawnTimer);
+  setTimeout(()=>document.getElementById('gameover-overlay').classList.add('show'),400);
+}
+
+function winGame(){
+  gameOver=true;
+  clearInterval(spawnTimer);
+  document.getElementById('stat-traps').textContent=traps;
+  document.getElementById('stat-lives').textContent=lives;
+  document.getElementById('win-overlay').classList.add('show');
+}
+
+function resetGame(){
+  lives=MAX_LIVES;closed=0;traps=0;spawned=0;active=0;gameOver=false;
+  updateHearts();
+  document.getElementById('prog-closed').textContent='0';
+  document.getElementById('gameover-overlay').classList.remove('show');
+  document.getElementById('win-overlay').classList.remove('show');
+  document.querySelectorAll('.popup').forEach(p=>p.remove());
+  clearInterval(spawnTimer);
+  document.getElementById('warn-flash').style.display='none';
+  document.getElementById('warn-toast').style.display='none';
+  init();
+}
+
+
+function makeDraggable(el){
+  const bar=el.querySelector('.pch-bar,.ios-body,.notif-body,.cookie-top,.survey-body,.av-body,.reward-inner,.dl-bar-top,.cap-body,.unsub-head,.gdpr-title');
+  if(!bar) return;
+  let ox=0,oy=0,mx=0,my=0;
+  bar.addEventListener('mousedown',e=>{
+    if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') return;
+    e.preventDefault();mx=e.clientX;my=e.clientY;
+    document.addEventListener('mousemove',drag);
+    document.addEventListener('mouseup',stop);
+  });
+  function drag(e){ox=mx-e.clientX;oy=my-e.clientY;mx=e.clientX;my=e.clientY;el.style.top=(el.offsetTop-oy)+'px';el.style.left=(el.offsetLeft-ox)+'px';}
+  function stop(){document.removeEventListener('mousemove',drag);document.removeEventListener('mouseup',stop);}
+}
+
+function init(){
+  for(let i=0;i<4;i++) setTimeout(()=>spawnOne(),i*400);
+  spawnTimer=setInterval(()=>{
+    if(!gameOver&&spawned<TOTAL) spawnOne();
+    if(spawned>=TOTAL) clearInterval(spawnTimer);
+  },SPAWN_MS);
+}
+
+init();
+</script>
