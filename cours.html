@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Démêler le Vrai du Faux – Guide Fake News</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-light: #4a4a6a;
+    --accent: #e63946;
+    --accent2: #2a9d8f;
+    --accent3: #e9c46a;
+    --bg: #fdfcf8;
+    --surface: #f4f1e8;
+    --border: #d4cfc0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 14mm 16mm;
+    background: var(--bg);
+  }
+
+  /* HEADER */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+    gap: 16px;
+  }
+  .header-eyebrow {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 40px;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .header h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .header h1 .word-vrai {
+    color: #228B22;
+    font-weight: 600;
+  }
+  .header h1 .word-faux {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .header-sub {
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 4px;
+  }
+  .header-badge {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 8px 14px;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.5;
+    flex-shrink: 0;
+  }
+
+  /* GRID LAYOUT */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .full-width { grid-column: 1 / -1; }
+
+  /* SECTION CARDS */
+  .card {
+    border: 1.5px solid var(--border);
+    padding: 12px 14px;
+    background: white;
+    position: relative;
+  }
+  .card.accent-red { border-left: 4px solid var(--accent); }
+  .card.accent-teal { border-left: 4px solid var(--accent2); }
+  .card.accent-gold { border-left: 4px solid var(--accent3); }
+  .card.dark-card {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+
+  .card-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    color: rgba(74, 74, 106, 0.5);
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    line-height: 1;
+    font-weight: 400;
+    user-select: none;
+  }
+  .dark-card .card-num { color: rgba(255,255,255,0.4); }
+
+  .card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .dark-card h2 { color: var(--bg); }
+
+  .card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .card ul li {
+    padding-left: 14px;
+    position: relative;
+    color: var(--ink-light);
+    font-size: 11.5px;
+  }
+  .dark-card ul li { color: rgba(255,255,255,0.75); }
+  .card ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 10px;
+    top: 1px;
+  }
+  .card.accent-teal ul li::before { color: var(--accent2); }
+  .card.accent-gold ul li::before { color: #c9993a; }
+  .dark-card ul li::before { color: var(--accent3); }
+
+  /* INTRO BAND */
+  .intro-band {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+  .intro-band .big-q {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .intro-band p {
+    font-size: 11.5px;
+    color: var(--ink-light);
+    line-height: 1.6;
+  }
+  .intro-band strong {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* TYPES GRID */
+  .types-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .type-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    font-size: 10px;
+    color: var(--ink-light);
+    text-align: center;
+    line-height: 1.3;
+  }
+  .type-pill strong {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  /* OUTILS SECTION */
+  .tools-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .tool-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .tool-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--ink-light);
+  }
+  .tool-name {
+    font-weight: 500;
+    color: var(--ink);
+    font-size: 11.5px;
+    flex-shrink: 0;
+  }
+  .tool-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent2);
+    flex-shrink: 0;
+    margin-bottom: 1px;
+  }
+
+  /* REFLEXES BAND */
+  .reflexes-band {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+  .reflexes-band .label {
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent3);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+  .reflex-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .reflex-n {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--accent3);
+    flex-shrink: 0;
+  }
+  .reflex-text {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.4;
+    padding-top: 4px;
+  }
+
+  /* GOLD RULE */
+  .gold-rule {
+    border: 2px solid var(--accent);
+    padding: 12px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 14px;
+    background: white;
+  }
+  .gold-rule .star {
+    font-size: 28px;
+    color: var(--accent);
+    font-family: 'DM Serif Display', serif;
+    line-height: 1;
+  }
+  .gold-rule p {
+    font-size: 12px;
+    color: var(--ink-light);
+    line-height: 1.6;
+  }
+  .gold-rule strong {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  /* RESOURCES */
+  .resources-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .resource-item {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    background: var(--surface);
+  }
+  .resource-item .duration {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 3px;
+  }
+  .resource-item .rtitle {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+  .resource-item .rsource {
+    font-size: 10px;
+    color: var(--ink-light);
+  }
+
+  /* FOOTER */
+  .footer {
+    border-top: 1.5px solid var(--border);
+    padding-top: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    margin-top: 4px;
+  }
+  .footer p {
+    font-size: 9px;
+    color: var(--ink-light);
+    line-height: 1.5;
+  }
+  .footer .tagline {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--accent);
+    text-align: right;
+  }
+
+  /* SECTION HEADER LABEL */
+  .section-label {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+  }
+
+  @media print {
+    body { background: white; }
+    .page {
+      width: 100%;
+      margin: 0;
+      padding: 10mm 14mm;
+      box-shadow: none;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Démêler le <span class="word-vrai">vrai</span> du <span class="word-faux">faux</span></h1>
+      <div class="header-sub">Comprendre, repérer et vérifier les fausses informations</div>
+    </div>
+    <div class="header-badge">Guide<br>complet<br>Fake News</div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="intro-band">
+    <div class="big-q">?</div>
+    <p>
+      Une <strong>fake news</strong> (ou <strong>infox</strong>) est une information mensongère, fabriquée et manipulée intentionnellement pour induire le public en erreur. Elle circule sur Internet, les réseaux sociaux, par SMS ou e-mail et se propage souvent très vite. Ses objectifs peuvent être d'<strong>influencer l'opinion</strong>, de générer des clics, de gagner de l'argent, ou simplement de faire rire (satire).
+    </p>
+  </div>
+
+  <!-- TYPES DE FAKE NEWS -->
+  <div style="margin-bottom: 14px;">
+    <div class="section-label">Les formes que prennent les fake news</div>
+    <div class="types-grid">
+      <div class="type-pill"><strong>Désinformation</strong>Info orientée, souvent virale</div>
+      <div class="type-pill"><strong>Rumeurs</strong>Non vérifiées, se répandent vite</div>
+      <div class="type-pill"><strong>Canulars / Satire</strong>Articles humoristiques (ex: Gorafi)</div>
+      <div class="type-pill"><strong>Hoax</strong>Chaînes de messages alarmistes</div>
+      <div class="type-pill"><strong>Phishing</strong>Faux e-mails imitant une banque</div>
+      <div class="type-pill"><strong>Propagande</strong>Info partisane, politique ou religieuse</div>
+      <div class="type-pill"><strong>Pseudo-science</strong>Faux habillé de termes scientifiques</div>
+      <div class="type-pill"><strong>Complotisme</strong>Récits conspirationnistes sans preuve</div>
+    </div>
+  </div>
+
+  <!-- 5 METHODS -->
+  <div class="section-label">5 méthodes pour vérifier une information</div>
+  <div class="main-grid" style="margin-bottom: 14px;">
+    <div class="card accent-red">
+      <div class="card-num">1</div>
+      <h2>Vérifier la source</h2>
+      <ul>
+        <li>Média reconnu ou site inconnu ?</li>
+        <li>L'article mentionne-t-il un auteur identifiable ?</li>
+        <li>Consulte « À propos » et « Qui sommes-nous ? »</li>
+        <li>Méfie-toi des sites qui imitent des médias connus</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <div class="card-num">2</div>
+      <h2>Croiser les sources</h2>
+      <ul>
+        <li>Copier une phrase-clé du titre et la rechercher</li>
+        <li>Plusieurs médias fiables en parlent-ils ?</li>
+        <li>Une seule source → rester prudent(e)</li>
+        <li>Regarder la date de publication</li>
+      </ul>
+    </div>
+    <div class="card accent-gold">
+      <div class="card-num">3</div>
+      <h2>Vérifier date & contexte</h2>
+      <ul>
+        <li>Certaines fake news recyclent de vieilles infos</li>
+        <li>Une image peut être réelle mais hors contexte</li>
+        <li>Vérifier si l'info est récente ou ancienne</li>
+        <li>Chercher la version originale de l'événement</li>
+      </ul>
+    </div>
+    <div class="card accent-red">
+      <div class="card-num">4</div>
+      <h2>Analyser le ton & style</h2>
+      <ul>
+        <li>Titre exagéré, incroyable, très émotionnel ?</li>
+        <li>Emploi du conditionnel (« aurait », « serait »…)</li>
+        <li>Vocabulaire violent ou alarmiste ?</li>
+        <li>L'info veut-elle te choquer ou te révolter ?</li>
+      </ul>
+    </div>
+    <div class="card accent-teal full-width">
+      <div class="card-num">5</div>
+      <h2>Vérifier les images</h2>
+      <ul style="flex-direction: row; flex-wrap: wrap; gap: 6px 20px;">
+        <li>Faire une recherche d'image inversée (Google Images ou TinEye)</li>
+        <li>Voir où et quand l'image a été publiée pour la première fois</li>
+        <li>Si l'image vient d'un ancien événement → info probablement trompeuse</li>
+        <li>Une image réelle peut être volontairement sortie de son contexte</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 3 REFLEXES -->
+  <div class="reflexes-band">
+    <div class="label">Réflexes</div>
+    <div class="reflex-item">
+      <div class="reflex-n">1</div>
+      <div class="reflex-text">Copier une phrase-clé du titre et la rechercher en ligne</div>
+    </div>
+    <div class="reflex-item">
+      <div class="reflex-n">2</div>
+      <div class="reflex-text">Faire une recherche d'image inversée sur Google Images ou TinEye</div>
+    </div>
+    <div class="reflex-item">
+      <div class="reflex-n">3</div>
+      <div class="reflex-text">Vérifier la crédibilité du site ou du compte qui publie l'info</div>
+    </div>
+  </div>
+
+  <!-- OUTILS -->
+  <div class="section-label">Outils de vérification</div>
+  <div class="tools-row" style="margin-bottom: 14px;">
+    <div>
+      <p style="font-size: 10.5px; font-weight: 500; color: var(--ink); margin-bottom: 6px;">Sites de fact-checking</p>
+      <ul class="tool-list">
+        <li><div class="tool-dot"></div><span class="tool-name">Décodex</span>Les Décodeurs — Le Monde</li>
+        <li><div class="tool-dot"></div><span class="tool-name">CheckNews</span>Libération — checknews.fr</li>
+        <li><div class="tool-dot"></div><span class="tool-name">AFP Factuel</span>Agence France-Presse</li>
+        <li><div class="tool-dot"></div><span class="tool-name">Vrai ou Fake</span>France Info — francetvinfo.fr</li>
+        <li><div class="tool-dot"></div><span class="tool-name">Les Observateurs</span>France 24</li>
+        <li><div class="tool-dot"></div><span class="tool-name">HoaxBuster</span>Recense les fake news connues</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-size: 10.5px; font-weight: 500; color: var(--ink); margin-bottom: 6px;">Vérification d'images</p>
+      <ul class="tool-list">
+        <li><div class="tool-dot" style="background: var(--accent);"></div><span class="tool-name">Google Images</span>Recherche inversée — images.google.com</li>
+        <li><div class="tool-dot" style="background: var(--accent);"></div><span class="tool-name">TinEye</span>Source d'une image — tineye.com</li>
+      </ul>
+      <p style="font-size: 10.5px; font-weight: 500; color: var(--ink); margin-top: 10px; margin-bottom: 6px;">Sites satiriques (≠ vrais médias !)</p>
+      <p style="font-size: 10.5px; color: var(--ink-light);">Le Gorafi · Nordpresse · SecretNews · Mediamass</p>
+      <p style="font-size: 9.5px; color: var(--accent); margin-top: 4px;">⚠ Ces sites publient volontairement de faux articles humoristiques.</p>
+    </div>
+  </div>
+
+  <!-- ATTITUDES -->
+  <div class="section-label">Les bonnes attitudes — esprit critique</div>
+  <div class="main-grid" style="margin-bottom: 14px;">
+    <div class="card dark-card">
+      <h2 style="margin-bottom: 6px;">Développer son esprit critique</h2>
+      <ul>
+        <li><strong style="color: rgba(255,255,255,0.95);">Curiosité</strong> — Je cherche, je m'interroge, je creuse.</li>
+        <li><strong style="color: rgba(255,255,255,0.95);">Lucidité</strong> — Cette info me semble-t-elle plausible ?</li>
+        <li><strong style="color: rgba(255,255,255,0.95);">Modestie</strong> — Je peux me tromper. Je n'ai pas toutes les réponses.</li>
+        <li><strong style="color: rgba(255,255,255,0.95);">Écoute</strong> — Je prends en compte l'avis des experts.</li>
+        <li><strong style="color: rgba(255,255,255,0.95);">Autonomie</strong> — Je construis ma propre opinion.</li>
+      </ul>
+      <p style="font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">⚠ L'esprit critique, ce n'est pas douter de tout — c'est savoir quand et comment vérifier.</p>
+    </div>
+    <div class="card accent-gold">
+      <h2>Écouter ses émotions</h2>
+      <ul>
+        <li>Si une info te choque ou te révolte fortement…</li>
+        <li>C'est souvent un signal d'alerte.</li>
+        <li>Pause. Respire. Vérifie avant de réagir.</li>
+        <li>Ne partage jamais dans l'émotion du moment.</li>
+      </ul>
+      <p style="font-size: 10px; color: var(--ink-light); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 6px;">Partager une fake news sans le vouloir, c'est quand même contribuer à la propager.</p>
+    </div>
+  </div>
+
+  <!-- REGLE D'OR -->
+  <div class="gold-rule">
+    <div class="star">★</div>
+    <div>
+      <strong>Règle d'or à retenir absolument</strong>
+      Si une information semble choquante, incroyable ou très émotionnelle : <strong style="color: var(--accent); font-size: 13px; text-decoration: underline;">Vérifie-la toujours avant de la partager.</strong> Chacun a la responsabilité de s'informer correctement et de ne pas alimenter la désinformation — même involontairement.
+    </div>
+  </div>
+
+
+
+</div>
+</body>
+</html>
