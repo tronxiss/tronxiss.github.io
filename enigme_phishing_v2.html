@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Énigme 2.5 — Mail Anamoz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Google+Sans:wght@400;500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family:'Roboto',sans-serif;
+      background:#202124;
+      color:#e8eaed;
+      height:100vh;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* SCANLINES subtiles */
+    body::after {
+      content:''; position:fixed; inset:0; z-index:9998; pointer-events:none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.006) 2px, rgba(0,255,65,0.006) 4px);
+    }
+
+    /* ===== TOP BAR GMAIL STYLE ===== */
+    .topbar {
+      display:flex; align-items:center; gap:12px;
+      padding:8px 16px; background:#202124;
+      border-bottom:1px solid #3c4043;
+      flex-shrink:0; position:relative; z-index:10;
+    }
+    .topbar-logo {
+      display:flex; align-items:center; gap:8px;
+      font-size:1.4em; font-weight:500; color:#e8eaed;
+      font-family:'Google Sans',sans-serif; letter-spacing:-0.5px;
+      margin-right:8px;
+    }
+    .logo-icon {
+      width:36px; height:36px; border-radius:50%;
+      background:linear-gradient(135deg, #00ff41, #00cc33);
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.75em; font-weight:700; color:#000;
+      box-shadow:0 0 12px #00ff4144;
+    }
+    .logo-n { color:#00ff41; }
+    .topbar-search {
+      flex:1; max-width:720px; background:#2d2e30; border:none; border-radius:24px;
+      padding:10px 20px; color:#e8eaed; font-size:0.95em; outline:none;
+      font-family:'Roboto',sans-serif;
+      transition:background 0.2s;
+    }
+    .topbar-search:focus { background:#3c4043; }
+    .topbar-right {
+      margin-left:auto; display:flex; align-items:center; gap:12px;
+    }
+    .avatar {
+      width:34px; height:34px; border-radius:50%;
+      background:linear-gradient(135deg, #4285f4, #34a853);
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.85em; font-weight:600; color:#fff; cursor:pointer;
+      font-family:'Google Sans',sans-serif;
+    }
+    .mission-badge {
+      font-family:'Share Tech Mono',monospace; font-size:0.65em; color:#00ff41;
+      background:#00ff4112; border:1px solid #00ff4133; border-radius:12px;
+      padding:4px 12px; letter-spacing:2px;
+      animation:pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 5px #00ff4122;} 50%{box-shadow:0 0 16px #00ff4144;} }
+
+    /* ===== MAIN LAYOUT ===== */
+    .app-body {
+      display:flex; flex:1; overflow:hidden; position:relative; z-index:5;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width:256px; flex-shrink:0; padding:8px 0;
+      background:#202124; overflow-y:auto;
+      border-right:1px solid #3c4043;
+    }
+    .compose-btn {
+      margin:8px 16px 16px; padding:16px 24px;
+      background:#303134; border:none; border-radius:16px;
+      color:#e8eaed; font-family:'Google Sans',sans-serif;
+      font-size:0.9em; font-weight:500; cursor:pointer;
+      display:flex; align-items:center; gap:12px;
+      transition:background 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.3);
+    }
+    .compose-btn:hover { background:#404145; }
+    .compose-icon { font-size:1.2em; }
+    .nav-item {
+      display:flex; align-items:center; gap:16px;
+      padding:8px 16px 8px 26px; border-radius:0 20px 20px 0; margin-right:16px;
+      font-size:0.9em; cursor:pointer; transition:background 0.2s;
+      color:#e8eaed; user-select:none;
+    }
+    .nav-item:hover { background:#2d2e30; }
+    .nav-item.active { background:#2d3748; color:#8ab4f8; font-weight:500; }
+    .nav-item .nav-icon { font-size:1.1em; min-width:24px; }
+    .nav-badge { margin-left:auto; font-size:0.8em; font-weight:600; color:#e8eaed; }
+    .nav-item.active .nav-badge { color:#8ab4f8; }
+    .sidebar-divider { height:1px; background:#3c4043; margin:8px 0; }
+    .sidebar-section { font-size:0.75em; color:#9aa0a6; padding:8px 16px 4px 26px; letter-spacing:0.5px; }
+
+    /* ===== EMAIL LIST ===== */
+    .email-list-panel {
+      width:320px; flex-shrink:0; border-right:1px solid #3c4043;
+      overflow-y:auto; background:#202124;
+    }
+    .list-toolbar {
+      display:flex; align-items:center; gap:8px; padding:12px 16px;
+      border-bottom:1px solid #3c4043; background:#202124; position:sticky; top:0; z-index:2;
+    }
+    .list-sort { font-size:0.8em; color:#9aa0a6; margin-left:auto; }
+    .checkbox-all {
+      width:18px; height:18px; border:2px solid #9aa0a6; border-radius:3px;
+      cursor:pointer; transition:all 0.2s; flex-shrink:0;
+    }
+    .email-row {
+      display:flex; align-items:flex-start; gap:12px; padding:12px 16px;
+      border-bottom:1px solid #2d2e30; cursor:pointer;
+      transition:background 0.15s; position:relative;
+    }
+    .email-row:hover { background:#2d2e30; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+    .email-row.selected { background:#2d3748; }
+    .email-row.unread .row-sender { font-weight:700; color:#e8eaed; }
+    .email-row.unread .row-subject { font-weight:600; color:#e8eaed; }
+    .email-row.unread::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+      background:#8ab4f8;
+    }
+    .row-avatar {
+      width:36px; height:36px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.9em; font-weight:600; color:#fff;
+      font-family:'Google Sans',sans-serif;
+    }
+    .row-content { flex:1; min-width:0; }
+    .row-sender { font-size:0.88em; color:#c4c7c5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+    .row-subject { font-size:0.85em; color:#9aa0a6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+    .row-preview { font-size:0.8em; color:#666; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .row-time { font-size:0.78em; color:#9aa0a6; flex-shrink:0; margin-left:8px; white-space:nowrap; }
+    .row-star { font-size:1em; color:#3c4043; margin-top:2px; }
+
+    /* ===== EMAIL READER ===== */
+    .email-reader {
+      flex:1; overflow-y:auto; padding:20px 32px;
+      background:#202124;
+    }
+    .reader-placeholder {
+      display:flex; align-items:center; justify-content:center; height:100%;
+      color:#666; font-family:'Share Tech Mono',monospace; font-size:0.85em;
+      letter-spacing:2px; text-align:center;
+    }
+    .email-view { display:none; animation:fadeIn 0.3s ease-out; }
+    .email-view.active { display:block; }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+    /* Email view header */
+    .ev-subject {
+      font-size:1.5em; color:#e8eaed; font-family:'Google Sans',sans-serif;
+      font-weight:400; margin-bottom:16px; line-height:1.3;
+    }
+    .ev-meta {
+      display:flex; align-items:flex-start; gap:12px; margin-bottom:20px;
+      padding-bottom:16px; border-bottom:1px solid #3c4043;
+    }
+    .ev-avatar {
+      width:40px; height:40px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1em; font-weight:700; color:#fff; flex-shrink:0;
+      font-family:'Google Sans',sans-serif;
+    }
+    .ev-meta-text { flex:1; }
+    .ev-sender { font-size:0.9em; color:#e8eaed; font-weight:500; margin-bottom:4px; }
+    .ev-sender-email { font-size:0.8em; color:#9aa0a6; }
+    .ev-date { font-size:0.8em; color:#9aa0a6; white-space:nowrap; }
+    .ev-to { font-size:0.8em; color:#9aa0a6; margin-top:2px; }
+
+    /* ===== EMAIL BODY STYLES ===== */
+    .ev-body { font-size:0.9em; line-height:1.75; color:#c4c7c5; max-width:680px; }
+    .ev-body p { margin-bottom:12px; }
+
+    /* Anamoz header */
+    .anamoz-header {
+      background:linear-gradient(135deg, #0f2a3a, #214f6b, #2f6f92);
+      border-radius:12px 12px 0 0; padding:20px; text-align:center;
+      margin-bottom:0;
+    }
+    .anamoz-logo {
+      font-family:'Google Sans',sans-serif; font-size:1.8em; font-weight:700;
+      color:#fff; letter-spacing:-1px; text-shadow:0 2px 8px rgba(0,0,0,0.2);
+    }
+    .anamoz-logo span { color:#9cd8ff; }
+    .anamoz-tagline { font-size:0.75em; color:rgba(255,255,255,0.8); letter-spacing:1px; margin-top:2px; }
+    .amz-icon { font-size:2em; margin-bottom:6px; }
+
+    .email-card {
+      background:#292a2d; border:1px solid #3c4043; border-radius:0 0 12px 12px;
+      padding:24px; margin-bottom:16px;
+    }
+    .email-card p { color:#c4c7c5; }
+
+    .amz-alert-box {
+      background:#1f2b17; border:1px solid #8bc34a44; border-left:3px solid #8bc34a;
+      border-radius:6px; padding:14px 16px; margin:14px 0;
+    }
+    .amz-alert-box p { color:#b9e391 !important; font-size:0.88em; }
+
+    .amz-btn {
+      display:block; width:100%; text-align:center;
+      background:linear-gradient(135deg, #5f9f3f, #7ec850);
+      color:#fff; font-weight:700; padding:14px;
+      border-radius:8px; text-decoration:none; font-size:0.95em;
+      margin:16px 0; cursor:pointer; letter-spacing:0.5px;
+      box-shadow:0 4px 14px rgba(126,200,80,0.3);
+    }
+    .amz-link { color:#8ab4f8; font-size:0.82em; word-break:break-all; }
+
+    .ev-footer { 
+      margin-top:16px; padding-top:14px; border-top:1px solid #3c4043;
+      font-size:0.78em; color:#666;
+    }
+    .ev-footer a { color:#555; }
+
+    /* Legit email style */
+    .legit-header {
+      background:#1a3a5c; border-radius:8px 8px 0 0; padding:16px 20px;
+      display:flex; align-items:center; gap:12px;
+    }
+    .legit-logo { font-family:'Google Sans',sans-serif; font-size:1.1em; color:#8ab4f8; font-weight:600; }
+
+    /* ===== CLUE SYSTEM ===== */
+    .evidence {
+      cursor:text;
+      border-radius:2px;
+      display:inline;
+      position:relative;
+      color:inherit;
+      background:transparent;
+    }
+    .evidence.spotted {
+      color:#00ff41;
+      background:rgba(0,255,65,0.08);
+      border-radius:3px;
+    }
+    .evidence.spotted::after {
+      content:attr(data-num);
+      position:absolute; top:-10px; right:-5px;
+      background:#00ff41; color:#000; border-radius:50%;
+      width:14px; height:14px; font-size:9px; font-weight:700;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-family:'Share Tech Mono',monospace; line-height:1;
+    }
+
+    /* ===== CLUE TOOLTIP ===== */
+    .clue-tooltip {
+      position:fixed; z-index:9999; background:#1a2a1a; border:1px solid #00ff4155;
+      border-radius:10px; padding:14px 16px; max-width:300px; font-size:0.82em;
+      box-shadow:0 0 30px #00ff4133, 0 8px 30px rgba(0,0,0,0.7);
+      animation:tooltipIn 0.2s ease-out; pointer-events:none;
+      font-family:'Roboto',sans-serif;
+    }
+    @keyframes tooltipIn { from{opacity:0;transform:scale(0.95) translateY(4px);} to{opacity:1;transform:scale(1) translateY(0);} }
+    .clue-tooltip h4 { font-family:'Orbitron',sans-serif; font-size:0.85em; color:#00ff41; margin-bottom:6px; }
+    .clue-tooltip p { color:#aaa; line-height:1.6; }
+    .clue-tooltip .letter-badge { display:inline-block; background:#00ff4120; border:1px solid #00ff4155; border-radius:6px; padding:3px 10px; font-family:'Orbitron',sans-serif; font-size:1.1em; color:#00ff41; font-weight:900; margin-top:8px; }
+    .hidden { display:none !important; }
+
+    /* ===== BOTTOM PANEL ===== */
+    .bottom-panel {
+      flex-shrink:0; background:#202124; border-top:1px solid #3c4043;
+      padding:12px 24px; display:flex; align-items:center; gap:20px; z-index:10;
+    }
+
+    /* Progress */
+    .progress-compact {
+      display:flex; align-items:center; gap:10px; flex-shrink:0;
+    }
+    .prog-label { font-family:'Share Tech Mono',monospace; font-size:0.68em; color:#9aa0a6; letter-spacing:1px; white-space:nowrap; }
+    .prog-track { width:120px; height:4px; background:#3c4043; border-radius:4px; overflow:hidden; }
+    .prog-fill { height:100%; background:linear-gradient(90deg, #00ff41, #00cc33); border-radius:4px; width:0%; transition:width 0.7s cubic-bezier(0.22,1,0.36,1); box-shadow:0 0 8px #00ff4144; }
+    .prog-dots { display:flex; gap:5px; }
+    .prog-dot { width:9px; height:9px; border-radius:50%; background:#3c4043; border:1px solid #555; transition:all 0.4s; }
+    .prog-dot.done { background:#00ff41; border-color:#00ff41; box-shadow:0 0 6px #00ff4166; }
+    .prog-dot.active { border-color:#00ff4166; animation:dotPulse 1.5s ease-in-out infinite; }
+    @keyframes dotPulse { 0%,100%{box-shadow:0 0 3px #00ff4133;} 50%{box-shadow:0 0 10px #00ff4166;} }
+    .prog-text { font-family:'Share Tech Mono',monospace; font-size:0.72em; color:#00ff41; white-space:nowrap; }
+
+    /* Password section */
+    .pwd-section { display:flex; align-items:center; gap:10px; flex:1; justify-content:center; }
+    .pwd-label { font-family:'Share Tech Mono',monospace; font-size:0.7em; color:#9aa0a6; letter-spacing:1px; white-space:nowrap; }
+    .pwd-slots { display:flex; gap:6px; }
+    .pwd-slot {
+      width:38px; height:44px; border:1.5px solid #3c4043; border-radius:6px;
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Orbitron',sans-serif; font-size:1.2em; font-weight:900;
+      color:#555; background:#292a2d; transition:all 0.3s;
+    }
+    .pwd-slot.filled { border-color:#00ff4188; background:#1a2a1a; color:#00ff41; text-shadow:0 0 8px #00ff4166; }
+    .pwd-slot.wrong { border-color:#ff444488; background:#2a1a1a; color:#ff4444; animation:shake 0.4s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }
+
+    .pwd-input-row { display:flex; gap:8px; align-items:center; }
+    .pwd-input {
+      width:130px; padding:10px 12px; border-radius:6px;
+      border:1px solid #3c4043; background:#292a2d; color:#00ff41;
+      font-family:'Share Tech Mono',monospace; font-size:0.9em; letter-spacing:3px;
+      text-transform:uppercase; outline:none; transition:all 0.3s;
+    }
+    .pwd-input::placeholder { color:#555; letter-spacing:1px; text-transform:none; font-size:0.85em; }
+    .pwd-input:focus { border-color:#00ff4155; box-shadow:0 0 14px #00ff4111; }
+    .pwd-input.error { border-color:#ff444455; animation:shake 0.4s ease; }
+    .pwd-input.success { border-color:#00ff41; box-shadow:0 0 14px #00ff4133; }
+
+    .btn-hint {
+      padding:8px 14px; background:transparent; border:1px solid #3c4043;
+      color:#9aa0a6; font-family:'Share Tech Mono',monospace; font-size:0.7em;
+      border-radius:6px; cursor:pointer; transition:all 0.2s; white-space:nowrap;
+    }
+    .btn-hint:hover { border-color:#8ab4f8; color:#8ab4f8; }
+
+    /* Hint text */
+    .hint-text {
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.78em;
+      color:#8ab4f8;
+      max-width:340px;
+      line-height:1.45;
+      opacity:0;
+      transition:opacity 0.4s;
+      overflow:visible;
+      text-overflow:clip;
+      white-space:normal;
+      word-break:break-word;
+      text-align:right;
+    }
+    .hint-text.vis { opacity:1; }
+    .hint-dots { display:flex; gap:4px; }
+    .hint-dot { width:7px; height:7px; border-radius:50%; background:#00ff41; box-shadow:0 0 4px #00ff4144; }
+    .hint-dot.used { background:#333; box-shadow:none; }
+
+    .center-msg {
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%, -50%);
+      min-width:360px;
+      max-width:80vw;
+      z-index:9500;
+      padding:14px 40px 14px 18px;
+      border-radius:10px;
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.85em;
+      text-align:center;
+      box-shadow:0 14px 40px rgba(0,0,0,0.45);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity 0.2s ease;
+      border:1px solid transparent;
+      background:#1f2124;
+    }
+    .center-msg.show { opacity:1; pointer-events:auto; }
+    .center-msg-close {
+      position:absolute;
+      top:6px;
+      right:8px;
+      width:24px;
+      height:24px;
+      border:none;
+      border-radius:6px;
+      background:transparent;
+      color:inherit;
+      font-size:1.1em;
+      line-height:1;
+      cursor:pointer;
+      opacity:0.9;
+    }
+    .center-msg-close:hover {
+      background:rgba(255,255,255,0.08);
+      opacity:1;
+    }
+    .center-msg.err {
+      color:#ffb3b3;
+      border-color:#ff444455;
+      background:#2a1616;
+    }
+    .center-msg.ok {
+      color:#afffc5;
+      border-color:#00ff4166;
+      background:#14261a;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+    /* ===== SUCCESS OVERLAY ===== */
+    #success-overlay {
+      display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.95);
+      align-items:center; justify-content:center; backdrop-filter:blur(6px);
+    }
+    #success-overlay.show { display:flex; }
+    .success-box {
+      background:#202124; border:1px solid #3c4043; border-radius:16px;
+      padding:40px; max-width:640px; width:90%; max-height:90vh; overflow-y:auto;
+      box-shadow:0 0 80px rgba(0,255,65,0.15); animation:fadeIn 0.5s ease-out;
+    }
+    .success-icon { text-align:center; font-size:3em; margin-bottom:12px; animation:successPop 0.6s cubic-bezier(0.175,0.885,0.32,1.275); }
+    @keyframes successPop { from{transform:scale(0);} to{transform:scale(1);} }
+    .success-title { font-family:'Orbitron',sans-serif; font-size:1.2em; color:#00ff41; text-align:center; margin-bottom:6px; letter-spacing:2px; }
+    .success-pwd { text-align:center; font-family:'Orbitron',sans-serif; font-size:1.8em; color:#00ff41; font-weight:900; letter-spacing:6px; text-shadow:0 0 20px #00ff4166; margin:16px 0; }
+    .success-rule { background:#00ff4108; border:1px solid #00ff4122; border-radius:10px; padding:14px; margin:12px 0; }
+    .success-rule p { font-family:'Share Tech Mono',monospace; font-size:0.82em; color:#00ff41; line-height:1.7; }
+    .rules-list { margin-top:14px; }
+    .rule-item { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid #2d2e30; font-size:0.85em; color:#c4c7c5; line-height:1.6; }
+    .rule-icon { font-size:1.1em; flex-shrink:0; margin-top:1px; }
+    .rule-item strong { color:#e8eaed; }
+    .code { color:#00ff41; font-family:'Share Tech Mono',monospace; font-size:0.9em; background:#1a2a1a; padding:1px 5px; border-radius:3px; }
+    .section-title { font-family:'Orbitron',sans-serif; font-size:0.9em; color:#fff; margin:20px 0 10px; letter-spacing:1px; display:flex; align-items:center; gap:8px; }
+    .btn-return {
+      width:100%; margin-top:20px; padding:12px; background:transparent;
+      border:1.5px solid #3c4043; color:#9aa0a6; font-family:'Orbitron',sans-serif;
+      font-size:0.75em; letter-spacing:1px; border-radius:8px; cursor:pointer; transition:all 0.2s;
+    }
+    .btn-return:hover { border-color:#00ff41; color:#00ff41; }
+
+    .inspect-actions {
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .btn-inspect {
+      padding:10px 14px;
+      border-radius:8px;
+      border:1px solid #8ab4f8;
+      background:transparent;
+      color:#8ab4f8;
+      cursor:pointer;
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.75em;
+      letter-spacing:1px;
+    }
+    .btn-inspect:hover {
+      background:#8ab4f811;
+    }
+    .inspect-help {
+      font-size:0.78em;
+      color:#9aa0a6;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SUCCESS OVERLAY -->
+<div id="success-overlay">
+  <div class="success-box">
+    <div class="success-icon">🔓</div>
+    <div class="success-title">ÉNIGME RÉSOLUE — PHISHING DÉMASQUÉ</div>
+    <div class="success-pwd">ANAMOZ</div>
+    <p style="text-align:center; color:#666; font-size:0.82em; margin-bottom:16px; font-family:'Share Tech Mono',monospace;">Racine du terme anglais <em>phishing</em> — technique d'hameçonnage numérique.</p>
+
+    <div class="success-rule">
+      <p>🛡️ Cet email Anamoz était une tentative de phishing — une arnaque sophistiquée visant à voler tes données personnelles et accès à tes comptes.</p>
+    </div>
+
+    <div class="section-title"><span>🔍</span> Pourquoi c'était frauduleux</div>
+    <div class="rules-list">
+      <div class="rule-item"><span class="rule-icon">📧</span><div><strong>Domaine email falsifié</strong> — <span class="code">support@anamoz-fr-secure.com</span> n'appartient pas au vrai domaine Amazon. Le domaine officiel attendu est <span class="code">@amazon.fr</span>.</div></div>
+      <div class="rule-item"><span class="rule-icon">🔒</span><div><strong>Demande de données sensibles</strong> — Le mail réclame des informations de facturation complètes et une vérification immédiate. Une vraie plateforme n'exige pas cela via un lien d'urgence.</div></div>
+      <div class="rule-item"><span class="rule-icon">✏️</span><div><strong>Formulations maladroites</strong> — Le ton est artificiel et comporte des tournures peu professionnelles pour un service officiel.</div></div>
+      <div class="rule-item"><span class="rule-icon">⚠️</span><div><strong>Urgence artificielle</strong> — "dans les 2 heures" pour te pousser à agir sous stress, sans réfléchir.</div></div>
+      <div class="rule-item"><span class="rule-icon">🔗</span><div><strong>Lien trompeur</strong> — <span class="code">anamoz-account-check.com</span> n'est pas un domaine Amazon légitime.</div></div>
+    </div>
+
+    <div class="section-title"><span>🛡️</span> Les bons réflexes</div>
+    <div class="rules-list">
+      <div class="rule-item"><span class="rule-icon">❌</span><div>Ne clique <strong>jamais</strong> sur un lien dans un email non sollicité — va directement sur le site officiel.</div></div>
+      <div class="rule-item"><span class="rule-icon">🔍</span><div><strong>Vérifie toujours</strong> l'adresse email complète de l'expéditeur, pas seulement le nom affiché.</div></div>
+      <div class="rule-item"><span class="rule-icon">🔒</span><div>Ne saisis <strong>jamais</strong> ton mot de passe actuel pour en "changer" via un email.</div></div>
+      <div class="rule-item"><span class="rule-icon">👤</span><div>En cas de doute, parle-en à un adulte de confiance ou vérifie directement sur l'application officielle.</div></div>
+    </div>
+
+    <button class="btn-return" onclick="document.getElementById('success-overlay').classList.remove('show')">⟵ Retour à la messagerie</button>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="clue-tooltip hidden" id="clue-tooltip">
+  <h4 id="tt-title">Indice détecté</h4>
+  <p id="tt-body"></p>
+  <div class="letter-badge" id="tt-letter">?</div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div class="topbar">
+    <div class="topbar-logo">
+    <div class="logo-icon">N</div>
+    <span><span class="logo-n">Nova</span>Mail</span>
+  </div>
+  <input class="topbar-search" value="Boîte de réception" readonly>
+  <div class="topbar-right">
+    <div class="mission-badge" id="mission-badge">MISSION ACTIVE</div>
+    <div class="avatar">•</div>
+  </div>
+</div>
+
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <button class="compose-btn"><span class="compose-icon">✏️</span> Nouveau message</button>
+    <div class="nav-item active"><span class="nav-icon">📥</span> Boîte de réception <span class="nav-badge">1</span></div>
+    <div class="nav-item"><span class="nav-icon">⭐</span> Suivis</div>
+    <div class="nav-item"><span class="nav-icon">🕐</span> En attente</div>
+    <div class="nav-item"><span class="nav-icon">📤</span> Messages envoyés</div>
+    <div class="nav-item"><span class="nav-icon">📝</span> Brouillons <span class="nav-badge">2</span></div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">Étiquettes</div>
+    <div class="nav-item"><span class="nav-icon">🔴</span> Urgent</div>
+    <div class="nav-item"><span class="nav-icon">💼</span> Travail</div>
+    <div class="nav-item"><span class="nav-icon">🗑️</span> Corbeille</div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">Espaces</div>
+    <div class="nav-item"><span class="nav-icon">📁</span> Mes fichiers</div>
+  </div>
+
+  <!-- EMAIL LIST -->
+  <div class="email-list-panel">
+    <div class="list-toolbar">
+      <div class="checkbox-all"></div>
+      <span class="list-sort">Plus récents</span>
+    </div>
+
+    <div class="email-row unread selected">
+      <div class="row-avatar" style="background:linear-gradient(135deg,#5f9f3f,#7ec850);">A</div>
+      <div class="row-content">
+        <div class="row-sender">Anamoz Service Client</div>
+        <div class="row-subject">⚠️ Échec de paiement : confirmation nécessaire</div>
+        <div class="row-preview">Votre commande est en attente de validation de facturation...</div>
+        <div class="row-time">08:17</div>
+      </div>
+      <div class="row-star">☆</div>
+    </div>
+  </div>
+
+  <!-- EMAIL READER -->
+  <div class="email-reader" id="email-reader">
+    <div class="email-view active" id="ev-phishing">
+      <div class="ev-subject">⚠️ Échec de paiement — votre compte Anamoz sera suspendu</div>
+      <div class="ev-meta">
+        <div class="ev-avatar" style="background:linear-gradient(135deg,#5f9f3f,#7ec850);">A</div>
+        <div class="ev-meta-text">
+          <div class="ev-sender">Anamoz Service Facturation &nbsp;
+            <span class="ev-sender-email">&lt;<span class="evidence" data-clue="1" data-num="1">support@anamoz-fr-secure.com</span>&gt;</span>
+          </div>
+          <div class="ev-to">À : <strong id="agent-mail-to">agent@novamail.fr</strong></div>
+          <div class="ev-date">Aujourd'hui à 08:17</div>
+        </div>
+      </div>
+
+      <div class="ev-body">
+        <div class="anamoz-header">
+          <div class="amz-icon">📦</div>
+          <div class="anamoz-logo">ana<span>moz</span></div>
+          <div class="anamoz-tagline">Centre de vérification des paiements</div>
+        </div>
+
+        <div class="email-card">
+          <p>Bonjour <strong style="color:#e8eaed;" id="agent-mail-name">Agent</strong>,</p>
+
+          <p>Notre système de facturation signale que <span class="evidence" data-clue="3" data-num="3">votre compte n'est pas validé correctement pour finaliser votre commande</span>.</p>
+
+          <div class="amz-alert-box">
+            <p>📦 <strong>Commande :</strong> #AMZ-99173-FR<br>
+            🕐 <strong>Dernier délai :</strong> aujourd'hui 10:17<br>
+            💳 <strong>Statut :</strong> CARTE REJETÉE<br>
+            🔴 <strong>Niveau :</strong> BLOCAGE AUTOMATIQUE</p>
+          </div>
+
+          <p><span class="evidence" data-clue="4" data-num="4">Si vous ne confirmez pas vos informations de paiement dans les 2 heures, votre compte sera suspendu définitivement</span>.</p>
+
+          <p>Pour éviter la suspension, merci de saisir immédiatement vos informations complètes de facturation (nom, numéro de carte, date d'expiration, cryptogramme) sur la page de vérification sécurisée.</p>
+
+          <a class="amz-btn" href="#" onclick="return onPhishingButtonClick(event)">✅ Vérifier mon compte maintenant</a>
+
+          <p style="font-size:0.82em; color:#888;">Ou copiez ce lien dans votre navigateur :</p>
+          <div style="margin:8px 0; padding:10px 12px; background:#1a1a2e; border-radius:6px; border:1px solid #3c4043;">
+            <span class="evidence amz-link" data-clue="5" data-num="5">https://anamoz-account-check.com/login/secure/validation?session=7GZp9D</span>
+          </div>
+
+          <p style="font-size:0.82em; color:#666; margin-top:8px;">Ce message est généré automatiquement, merci de ne pas répondre.</p>
+
+          <div class="inspect-actions">
+            <button class="btn-inspect" onclick="inspectSelection()">🔎 Signaler la sélection</button>
+            <span class="inspect-help">Sélectionne d'abord un passage suspect dans l'email, puis valide ton signalement.</span>
+          </div>
+        </div>
+
+        <div class="ev-footer">
+          <p>Cordialement,<br><strong style="color:#aaa;">L'équipe Anamoz — Facturation clients</strong></p>
+          <p style="margin-top:8px; font-size:1em; color:#ffffff; font-weight:700;">© 2026 Anamoz Bangladesh · <a href="#" style="color:#ffffff; text-decoration:underline;">Confidentialité</a> · <a href="#" style="color:#ffffff; text-decoration:underline;">Aide</a> · <a href="#" style="color:#ffffff; text-decoration:underline;">Se désabonner</a></p>
+          <p style="margin-top:8px; font-size:1.08em; color:#ffffff; font-weight:800; letter-spacing:0.2px;"><span class="evidence" data-clue="2" data-num="2">Anamoz Bangladesh Ltd., 19 Cloud Avenue, Dhaka 1207, Bangladesh</span></p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="center-msg" id="center-msg">
+  <button class="center-msg-close" type="button" aria-label="Fermer le message" onclick="closeCenterMessage(event)">&times;</button>
+  <div id="center-msg-text"></div>
+</div>
+
+<!-- BOTTOM PANEL -->
+<div class="bottom-panel">
+  <div class="progress-compact">
+    <span class="prog-label">PROGRESSION</span>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="prog-dots">
+      <div class="prog-dot active" id="dot-1"></div>
+      <div class="prog-dot" id="dot-2"></div>
+      <div class="prog-dot" id="dot-3"></div>
+      <div class="prog-dot" id="dot-4"></div>
+      <div class="prog-dot" id="dot-5"></div>
+    </div>
+    <span class="prog-text" id="prog-text">0 / 5</span>
+  </div>
+
+  <div class="pwd-section">
+    <span class="pwd-label">MOT DE PASSE :</span>
+    <div class="pwd-slots">
+      <div class="pwd-slot" id="ps-1">_</div>
+      <div class="pwd-slot" id="ps-2">_</div>
+      <div class="pwd-slot" id="ps-3">_</div>
+      <div class="pwd-slot" id="ps-4">_</div>
+      <div class="pwd-slot" id="ps-5">_</div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex-shrink:0;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button class="btn-hint" onclick="getHint()">💡 Indice</button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hd1"></div>
+        <div class="hint-dot" id="hd2"></div>
+        <div class="hint-dot" id="hd3"></div>
+      </div>
+    </div>
+    <div class="hint-text" id="hint-text"></div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+var CLUES = {
+  1: {
+    title: "Domaine email falsifié",
+    body: "Le domaine est 'anamoz-fr-secure.com'. Une copie d'Amazon n'utilise pas le domaine officiel @amazon.fr.",
+    letter: "P"
+  },
+  2: {
+    title: "Coordonnées corporate douteuses",
+    body: "Une adresse générique est utilisée pour paraître officielle, sans mention vérifiable d'un service client légitime Amazon.",
+    letter: "H"
+  },
+  3: {
+    title: "Formulation non professionnelle",
+    body: "La phrase de validation est maladroite et floue pour un message officiel de facturation.",
+    letter: "I"
+  },
+  4: {
+    title: "Urgence artificielle et menace",
+    body: "'dans les 2 heures' + 'suspendu définitivement' : pression psychologique typique d'une campagne de phishing.",
+    letter: "S"
+  },
+  5: {
+    title: "URL de phishing",
+    body: "'anamoz-account-check.com' est un faux domaine imitant Amazon pour voler des identifiants et données bancaires.",
+    letter: "H"
+  }
+};
+
+var HINTS = [
+  "Regarde attentivement l'expéditeur et le domaine du mail.",
+  "Vérifie le lien de vérification et l'adresse indiquée en bas du message.",
+  "Repère tous les passages suspects puis termine l'analyse dans la boîte mail."
+];
+
+var PASSWORD = "PHISH";
+var foundClues = new Set();
+var hintsUsed = 0;
+
+window.addEventListener('load', function() {
+  document.getElementById('ev-phishing').classList.add('active');
+  applyAgentIdentity();
+});
+
+function safeReadStorage(key) {
+  try {
+    return sessionStorage.getItem(key) || localStorage.getItem(key) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function safeWriteStorage(key, value) {
+  try {
+    sessionStorage.setItem(key, value);
+    localStorage.setItem(key, value);
+  } catch (e) {
+    // Ignore storage errors (private mode, blocked storage, etc.)
+  }
+}
+
+function getAgentName() {
+  var params = new URLSearchParams(window.location.search);
+  var fromUrl = params.get('agent') || params.get('agentName') || params.get('nomAgent') || '';
+  var fromStorage = safeReadStorage('escapeAgentName') || safeReadStorage('agentName') || safeReadStorage('nomAgent');
+  var raw = (fromUrl || fromStorage || '').trim();
+  if (!raw) return 'Agent';
+
+  var cleaned = raw.replace(/\s+/g, ' ').replace(/[^\w\s\-À-ÿ]/g, '').trim();
+  if (!cleaned) return 'Agent';
+
+  var normalized = cleaned.slice(0, 24);
+  safeWriteStorage('escapeAgentName', normalized);
+  return normalized;
+}
+
+function toEmailLocalPart(name) {
+  var plain = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  var local = plain.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9._-]/g, '');
+  return local || 'agent';
+}
+
+function applyAgentIdentity() {
+  var name = getAgentName();
+  var displayName = /^agent\b/i.test(name) ? name : ('Agent ' + name);
+  document.getElementById('agent-mail-name').textContent = displayName;
+  document.getElementById('agent-mail-to').textContent = toEmailLocalPart(name) + '@novamail.fr';
+}
+
+// ===== CLUE DETECTION =====
+function spotClue(num) {
+  var clue = CLUES[num];
+  var zone = document.querySelector('.evidence[data-clue="'+num+'"]');
+  var wasNew = !foundClues.has(num);
+
+  if (wasNew) {
+    foundClues.add(num);
+    zone.classList.add('spotted');
+    updateProgress();
+    if (foundClues.size === 5) {
+      showCenterMessage('> Tous les indices ont été trouvés. Analyse validée.', 'ok');
+      setTimeout(function() {
+        document.getElementById('success-overlay').classList.add('show');
+      }, 700);
+    }
+  }
+
+  showTooltip(zone, clue, num);
+}
+
+function showTooltip(zone, clue, num) {
+  var tt = document.getElementById('clue-tooltip');
+  document.getElementById('tt-title').textContent = '🔍 ' + clue.title;
+  document.getElementById('tt-body').textContent = clue.body;
+  document.getElementById('tt-letter').textContent = 'Lettre : ' + clue.letter;
+
+  var rect = zone.getBoundingClientRect();
+  var left = rect.left;
+  var top = rect.bottom + 10;
+
+  if (left + 310 > window.innerWidth) left = window.innerWidth - 320;
+  if (top + 180 > window.innerHeight) top = rect.top - 170;
+
+  tt.style.left = left + 'px';
+  tt.style.top = top + 'px';
+  tt.classList.remove('hidden');
+
+  clearTimeout(tt._timer);
+  tt._timer = setTimeout(function() { tt.classList.add('hidden'); }, 5000);
+}
+
+document.addEventListener('click', function(e) {
+  var tt = document.getElementById('clue-tooltip');
+  if (!e.target.closest('[data-clue]') && !tt.classList.contains('hidden')) {
+    tt.classList.add('hidden');
+  }
+});
+
+function inspectSelection() {
+  var selection = window.getSelection();
+  if (!selection || !selection.rangeCount || !selection.toString().trim()) {
+    showCenterMessage('> Sélection vide. Sélectionne un passage de l\'email avant de signaler.', 'err');
+    return;
+  }
+
+  var evidence = findEvidenceFromSelection(selection.getRangeAt(0));
+  if (!evidence) {
+    showCenterMessage('> Passage non pertinent. Revois l\'expéditeur, les menaces, ou le lien.', 'err');
+    return;
+  }
+
+  spotClue(Number(evidence.dataset.clue));
+  showCenterMessage('> Signalement accepté. Indice ajouté.', 'ok');
+}
+
+function findEvidenceFromSelection(range) {
+  var evidences = Array.from(document.querySelectorAll('#ev-phishing .evidence'));
+  var overlapping = evidences.filter(function(ev) {
+    try {
+      return range.intersectsNode(ev);
+    } catch (e) {
+      return false;
+    }
+  });
+
+  if (!overlapping.length) return null;
+  overlapping.sort(function(a, b) {
+    return b.textContent.length - a.textContent.length;
+  });
+  return overlapping[0];
+}
+
+function resetFoundClues() {
+  foundClues.clear();
+  document.querySelectorAll('.evidence.spotted').forEach(function(el){ el.classList.remove('spotted'); });
+  for (var i = 1; i <= 5; i++) {
+    var sl = document.getElementById('ps-'+i);
+    sl.textContent = '_';
+    sl.classList.remove('filled', 'wrong');
+    sl.style.color = '';
+  }
+  updateProgress();
+}
+
+function onPhishingButtonClick(event) {
+  event.preventDefault();
+  resetFoundClues();
+  showCenterMessage('> Mauvais réflexe : cliquer sur un lien d\'urgence est dangereux. Tu perds tes indices et dois reprendre l\'analyse.', 'err');
+  return false;
+}
+
+function showCenterMessage(message, type) {
+  var box = document.getElementById('center-msg');
+  document.getElementById('center-msg-text').textContent = message;
+  box.className = 'center-msg ' + (type || 'ok') + ' show';
+}
+
+function closeCenterMessage(event) {
+  if (event) event.stopPropagation();
+  document.getElementById('center-msg').classList.remove('show');
+}
+
+function updateProgress() {
+  var n = foundClues.size;
+  document.getElementById('prog-fill').style.width = (n / 5 * 100) + '%';
+  document.getElementById('prog-text').textContent = n + ' / 5';
+
+  for (var i=1; i<=5; i++) {
+    var d = document.getElementById('dot-'+i);
+    d.className = 'prog-dot';
+    if (i <= n) d.classList.add('done');
+    else if (i === n+1) d.classList.add('active');
+  }
+
+  var letters = ['P','H','I','S','H'];
+  var slots = [null,'ps-1','ps-2','ps-3','ps-4','ps-5'];
+  foundClues.forEach(function(num) {
+    var sl = document.getElementById(slots[num]);
+    sl.textContent = letters[num-1];
+    sl.classList.add('filled');
+  });
+}
+
+// ===== HINTS =====
+function getHint() {
+  if (hintsUsed>=3) return;
+  var ht=document.getElementById('hint-text');
+  ht.textContent=HINTS[hintsUsed];
+  ht.classList.add('vis');
+  document.getElementById('hd'+(hintsUsed+1)).classList.add('used');
+  hintsUsed++;
+}
+</script>
+</body>
+</html>

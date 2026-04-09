@@ -22,7 +22,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .post-avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #ddd; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; }
 .post-username { font-weight: 600; font-size: 14px; cursor: pointer; color: #262626; }
 .post-username:hover { text-decoration: underline; }
-.post-location { font-size: 12px; color: #8e8e8e; }
+.post-location {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f5132;
+  background: #d1f7e4;
+  border: 1px solid #7ee2b8;
+  border-radius: 999px;
+  padding: 3px 10px;
+  margin-top: 2px;
+}
 .post-more { margin-left: auto; font-size: 20px; cursor: pointer; color: #8e8e8e; }
 .post-image-placeholder { width: 100%; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; font-size: 80px; }
 .post-actions { display: flex; align-items: center; gap: 14px; padding: 10px 14px; }
@@ -243,6 +253,38 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       </div>
       <div class="post-time">il y a 6 heures</div>
     </div>
+
+    <!-- POST 4 -->
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar"><div class="post-avatar-inner">🏊</div></div>
+        <div><div class="post-username" onclick="openProfile('lucas_piscine')">lucas_piscine</div><div class="post-location">📍 Marseille, France</div></div>
+        <div class="post-more">···</div>
+      </div>
+      <img src="photo/cheval piscine.jpg" alt="Cheval à la piscine" style="width:100%; aspect-ratio:4/3; object-fit:cover; display:block;">
+      <div class="post-actions"><button class="post-action-btn">🤍</button><button class="post-action-btn">💬</button><button class="post-action-btn">📤</button><button class="post-action-btn post-save">🔖</button></div>
+      <div class="post-likes">3 214 mentions j'aime</div>
+      <div class="post-caption"><strong>lucas_piscine</strong> Une journée détente avec mon ami équin 🐴💦 <span class="post-hashtags">#summer #fun #mare #equestrian</span></div>
+      <button class="view-comments-btn" onclick="toggleComments('c4',this)">Voir les 52 commentaires</button>
+      <div class="comments-section" id="c4">
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('sarah_equestre')">🐎</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('sarah_equestre')">sarah_equestre</span><span class="comment-text"> Trop original ! 😍</span><div class="comment-time">il y a 5h</div></div>
+          <span class="comment-like">🤍</span>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('marc.delacroix')">😊</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('marc.delacroix')">marc.delacroix</span><span class="comment-text"> Trop beau 😍😍 tu veux des vrais abonnés ? Lien dans ma bio, 10K garanti !</span><div class="comment-time">il y a 4h · 12:45:33</div></div>
+          <span class="comment-like">🤍</span>
+        </div>
+        <div class="comment">
+          <div class="comment-avatar" onclick="openProfile('thomas_k')">🏄</div>
+          <div class="comment-body"><span class="comment-username" onclick="openProfile('thomas_k')">thomas_k</span><span class="comment-text"> Créatif ! 🎨</span><div class="comment-time">il y a 3h</div></div>
+          <span class="comment-like">🤍</span>
+        </div>
+      </div>
+      <div class="post-time">il y a 3 heures</div>
+    </div>
   </main>
 
   <aside class="sidebar">
@@ -331,11 +373,11 @@ const profiles = {
   'marine_photos':   { avatar:'🌅', fullname:'Marine Dubois', posts:247, followers:'12.4K', following:381, isBot:false, thumbs:['🌅','🌊','🏖️','🌸','🌙','🏔️'], info:{'Localisation':'Nice, France','Compte créé':'14 mars 2019','Bio':'Photographe 📸 | contact@marine.fr'} },
   'chef_antoine':    { avatar:'👨‍🍳', fullname:'Antoine Marchand', posts:512, followers:'8.7K', following:220, isBot:false, thumbs:['🍝','🥗','🍰','🥩','🍣','🥘'], info:{'Localisation':'Lyon','Compte créé':'2 juillet 2018','Bio':'Chef ⭐ Restaurant Le Perroquet Ivre'} },
   'alex_explorer':   { avatar:'🗺️', fullname:'Alexandre Petit', posts:891, followers:'45.2K', following:512, isBot:false, thumbs:['⛩️','🗼','🏔️','🌋','🏝️','🌃'], info:{'Localisation':'En voyage...','Compte créé':'8 janvier 2017','Bio':'🌍 34 pays | Photographe voyageur'} },
-  'julia_travel':    { avatar:'✈️', fullname:'Julia Martin', posts:134, followers:'2.1K', following:890, isBot:false, thumbs:['✈️','🏖️','🌅','🎭','🗽','🍜'], info:{'Localisation':'Paris','Compte créé':'5 novembre 2020','Bio':'✈️ Passionnée de voyages'} },
+  'julia_travel':    { avatar:'✈️', fullname:'Julia Martin', posts:134, followers:'2.1K', following:890, isBot:false, thumbs:['✈️','🏖️','🌅','🎭','🗽','🍜'], info:{'Localisation':'Dhaka, Bangladesh','Compte créé':'5 novembre 2020','Bio':'✈️ Passionnée de voyages'} },
   'thomas_k':        { avatar:'🏄', fullname:'Thomas Karlen', posts:203, followers:'3.4K', following:512, isBot:false, thumbs:['🌊','🏄','🌅','🏖️','🤿','🐚'], info:{'Localisation':'Biarritz','Compte créé':'11 juin 2019','Bio':'🏄 Surf & Photo'} },
   'sophie_m':        { avatar:'🌸', fullname:'Sophie Moreau', posts:89, followers:'1.2K', following:345, isBot:false, thumbs:['🌸','🍰','☕','🌷','🥗','📚'], info:{'Localisation':'Lyon','Compte créé':'20 avril 2021','Bio':'🌸 Foodie & lifestyle'} },
   'pierre_gourmet':  { avatar:'🍷', fullname:'Pierre Gaultier', posts:156, followers:'4.2K', following:178, isBot:false, thumbs:['🍷','🧀','🥂','🍾','🥩','🫙'], info:{'Localisation':'Bordeaux','Compte créé':'29 août 2020','Bio':'🍷 Sommelier'} },
-  'camille_w':       { avatar:'🌺', fullname:'Camille Weber', posts:67, followers:892, following:634, isBot:false, thumbs:['🌺','🗼','🌍','📖','☕','🎨'], info:{'Localisation':'Paris','Compte créé':'3 mars 2022','Bio':'🌺 Voyageuse & étudiante'} },
+  'camille_w':       { avatar:'🌺', fullname:'Camille Weber', posts:67, followers:892, following:634, isBot:false, thumbs:['🌺','🗼','🌍','📖','☕','🎨'], info:{'Localisation':'Dhaka, Bangladesh','Compte créé':'3 mars 2022','Bio':'🌺 Voyageuse & étudiante'} },
   'nicolas_v':       { avatar:'🎒', fullname:'Nicolas Vidal', posts:312, followers:'6.8K', following:290, isBot:false, thumbs:['🎒','🏔️','🌏','🕌','🦁','🌊'], info:{'Localisation':'Nomade','Compte créé':'17 septembre 2018','Bio':'📸 40 pays'} },
   'claire.bnrd':     { avatar:'🙂', fullname:'Claire Bonnard', posts:0, followers:4, following:9200, isBot:true, thumbs:[], info:{'Compte créé':'3 janvier 2024','Dernière activité':'14:32:07','Publications':'0','Abonnés':'4','Abonnements':'9 200','Bio':'Suivez le lien en bio 🔥'} },
   'marc.delacroix':  { avatar:'😊', fullname:'Marc Delacroix', posts:0, followers:2, following:11400, isBot:true, thumbs:[], info:{'Compte créé':'3 janvier 2024','Dernière activité':'15:14:07','Publications':'0','Abonnés':'2','Abonnements':'11 400','Bio':'10K abonnés garantis 🚀'} },

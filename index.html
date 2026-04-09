@@ -5,6 +5,7 @@
   <title>Dossier OMBRE-9 — Escape Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -805,6 +806,838 @@
     @media (max-width:900px) {
       .c-bracket, .scan-beam, .data-float, .edge-line, .ambient-grid { display:none; }
     }
+
+    /* ENIGMA 7 STYLES */
+    /* OBJECTIVE BOX */
+    .objective-box {
+      background: #1a2a1a;
+      border: 1px solid #00ff4133;
+      border-left: 3px solid #00ff41;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 0.9em;
+      color: #b0f0b0;
+      line-height: 1.7;
+    }
+    .objective-box strong { color: #00ff41; }
+
+    /* JOURNALIST BADGE */
+    .journalist-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #2a2a32;
+      border: 1px solid #00ff4133;
+      border-radius: 30px;
+      padding: 8px 18px 8px 8px;
+      margin-bottom: 20px;
+    }
+    .journalist-avatar {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #00ff4133, #00ff4166);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2em;
+      border: 1px solid #00ff4155;
+    }
+    .journalist-info { font-family: 'Share Tech Mono', monospace; font-size: 0.72em; }
+    .journalist-info .name { color: #00ff41; }
+    .journalist-info .role { color: #888; }
+
+    /* PHOTO SECTION */
+    .photo-wrapper {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .photo-container {
+      display: inline-block;
+      position: relative;
+      border: 2px solid #3a3a42;
+      border-radius: 10px;
+      overflow: hidden;
+      max-width: 100%;
+    }
+    .photo-container img {
+      display: block;
+      max-width: 100%;
+      max-height: 340px;
+      width: auto;
+    }
+    .photo-scan {
+      position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(180deg, transparent 45%, rgba(0,255,65,0.06) 50%, transparent 55%);
+      animation: scanPhoto 4s ease-in-out infinite;
+    }
+    @keyframes scanPhoto {
+      0%   { background-position-y: -100%; opacity: 1; }
+      100% { background-position-y: 300%; opacity: 0.5; }
+    }
+    .photo-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72em;
+      color: #666;
+      margin-top: 10px;
+      letter-spacing: 1px;
+    }
+
+    /* INSTRUCTION */
+    .instruction-row {
+      background: #2a2a32;
+      border: 1px solid #3a3a42;
+      border-left: 3px solid #ffaa00;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.82em;
+      color: #ffcc77;
+      line-height: 1.7;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .instruction-row .warn-icon { font-size: 1.3em; flex-shrink: 0; margin-top: 1px; }
+
+    /* CHOICES */
+    .choices-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.78em;
+      color: #00ff41;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .choices-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, #00ff4133, transparent);
+    }
+
+    .choice-btn {
+      width: 100%;
+      background: #2a2a32;
+      border: 1px solid #3a3a42;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .choice-btn:hover:not(:disabled) {
+      border-color: #00ff4155;
+      background: #1e2e1e;
+      transform: translateX(4px);
+      box-shadow: 0 0 20px #00ff4111;
+    }
+    .choice-btn:disabled { cursor: default; transform: none !important; }
+
+    .choice-num {
+      min-width: 32px; height: 32px;
+      background: #3a3a42;
+      border: 1px solid #555;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85em;
+      font-weight: 700;
+      color: #aaa;
+      flex-shrink: 0;
+      transition: all 0.25s;
+    }
+    .choice-btn:hover:not(:disabled) .choice-num {
+      background: #00ff4122;
+      border-color: #00ff41;
+      color: #00ff41;
+    }
+
+    .choice-text {
+      font-size: 0.87em;
+      color: #ccc;
+      line-height: 1.65;
+      padding-top: 5px;
+    }
+
+    /* STATES */
+    .choice-btn.correct {
+      border-color: #00ff41 !important;
+      background: #0d2a0d !important;
+      box-shadow: 0 0 25px #00ff4133, inset 0 0 20px #00ff4108 !important;
+    }
+    .choice-btn.correct .choice-num {
+      background: #00ff41 !important;
+      border-color: #00ff41 !important;
+      color: #000 !important;
+    }
+    .choice-btn.correct .choice-text { color: #90ff90 !important; }
+
+    .choice-btn.wrong {
+      border-color: #ff4444 !important;
+      background: #2a0d0d !important;
+      opacity: 0.6;
+    }
+    .choice-btn.wrong .choice-num {
+      background: #ff444422 !important;
+      border-color: #ff4444 !important;
+      color: #ff4444 !important;
+    }
+    .choice-btn.wrong .choice-text { color: #ff9999 !important; }
+
+    .choice-btn.revealed {
+      border-color: #555 !important;
+      opacity: 0.45;
+    }
+
+    /* ENIGME 4 IMAGE CHOICES */
+    .image-choices-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 700px) {
+      .image-choices-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .image-choice {
+      background: #2a2a32;
+      border: 1px solid #3a3a42;
+      border-radius: 10px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+    .image-choice:hover:not(:disabled) {
+      border-color: #00ff4155;
+      box-shadow: 0 0 20px #00ff4111;
+      transform: translateY(-2px);
+    }
+    .image-choice:disabled {
+      cursor: default;
+      transform: none !important;
+    }
+    .image-choice img {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 8px;
+      border: 1px solid #3a3a42;
+      display: block;
+    }
+    .image-choice img.fake-photo {
+      object-fit: contain;
+      object-position: center top;
+      background: #14141a;
+    }
+    .image-choice img.round2-photo {
+      object-fit: contain;
+      object-position: center center;
+      background: #14141a;
+    }
+    .image-choice-tag {
+      margin-top: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75em;
+      color: #bbb;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .image-choice.correct {
+      border-color: #00ff41 !important;
+      background: #0d2a0d !important;
+      box-shadow: 0 0 20px #00ff4133;
+    }
+    .image-choice.wrong {
+      border-color: #ff4444 !important;
+      background: #2a0d0d !important;
+      opacity: 0.7;
+    }
+    .image-choice.revealed {
+      border-color: #555 !important;
+      opacity: 0.45;
+    }
+
+    .code-reveal-small {
+      display: none;
+      margin-top: 14px;
+      background: #0d2a0d;
+      border: 1px solid #00ff4144;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85em;
+      color: #9af7a8;
+      line-height: 1.7;
+    }
+    .code-reveal-small.show {
+      display: block;
+      animation: fadeSlideIn 0.4s ease-out;
+    }
+    .code-reveal-small .code-inline {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 3px 10px;
+      border: 1px solid #00ff4166;
+      border-radius: 6px;
+      color: #00ff41;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+    }
+    .retry-e4 {
+      margin-top: 12px;
+      display: none;
+    }
+    .retry-e4.show {
+      display: inline-block;
+    }
+
+    /* FEEDBACK */
+    .feedback-box {
+      display: none;
+      margin-top: 20px;
+      border-radius: 10px;
+      padding: 20px 24px;
+      animation: fadeSlideIn 0.5s ease-out;
+    }
+    .feedback-box.show { display: block; }
+    .feedback-box.success {
+      background: #0a1f0a;
+      border: 1px solid #00ff4155;
+    }
+    .feedback-box.error {
+      background: #1f0a0a;
+      border: 1px solid #ff444455;
+    }
+    .feedback-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1em;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .feedback-box.success .feedback-title { color: #00ff41; }
+    .feedback-box.error .feedback-title { color: #ff6666; }
+    .feedback-body {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.82em;
+      line-height: 1.75;
+    }
+    .feedback-box.success .feedback-body { color: #80c880; }
+    .feedback-box.error .feedback-body { color: #c88080; }
+
+    /* SOURCE BOX (revealed on success) */
+    .source-box {
+      display: none;
+      margin-top: 14px;
+      background: #2a2a32;
+      border: 1px solid #3a3a42;
+      border-left: 3px solid #00ff41;
+      border-radius: 8px;
+      padding: 14px 18px;
+    }
+    .source-box.show { display: block; }
+    .source-box p {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.78em;
+      color: #777;
+      line-height: 1.7;
+    }
+    .source-box p strong { color: #00ff41; }
+
+    /* CODE BOX */
+    .code-reveal {
+      display: none;
+      margin-top: 18px;
+      background: #0a1f0a;
+      border: 1px solid #00ff4166;
+      border-radius: 10px;
+      padding: 18px 22px;
+      text-align: center;
+      animation: fadeSlideIn 0.5s ease-out;
+    }
+    .code-reveal.show { display: block; }
+    .code-reveal p {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.78em;
+      color: #888;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .code-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.8em;
+      font-weight: 900;
+      color: #00ff41;
+      letter-spacing: 6px;
+      text-shadow: 0 0 20px #00ff4166;
+    }
+    .code-rule {
+      margin-top: 12px;
+      font-size: 0.8em;
+      color: #666;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    /* HINT BAR */
+    .hint-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 20px;
+      padding: 12px 16px;
+      background: #2a2a32;
+      border: 1px solid #3a3a42;
+      border-radius: 10px;
+    }
+    .hint-dots { display: flex; gap: 5px; }
+    .hint-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #00ff41;
+      box-shadow: 0 0 6px #00ff4144;
+      transition: all 0.3s;
+    }
+    .hint-dot.used { background: #333; box-shadow: none; }
+    .hint-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8em;
+      color: #00ff41;
+      opacity: 0;
+      transition: opacity 0.4s;
+      flex: 1;
+    }
+    .hint-text.visible { opacity: 1; }
+
+    /* ATTEMPTS */
+    .attempts-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.73em;
+      color: #777;
+    }
+    .attempt-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #00ff41; box-shadow: 0 0 6px #00ff4144;
+      transition: all 0.3s;
+    }
+    .attempt-dot.used { background: #ff4444; box-shadow: 0 0 6px #ff444444; }
+    .attempt-dot.empty { background: #3a3a42; box-shadow: none; }
+
+    /* SUCCESS OVERLAY */
+    .success-overlay {
+      position: fixed; inset: 0; z-index: 10001; pointer-events: none;
+      animation: successFlash 1.2s ease-out forwards;
+    }
+    @keyframes successFlash {
+      0%   { background: rgba(0,255,65,0.22); }
+      30%  { background: rgba(0,255,65,0.08); }
+      100% { background: transparent; }
+    }
+
+    /* SHAKE */
+    @keyframes shake {
+      0%,100%{transform:translateX(0);}
+      20%{transform:translateX(-8px);}
+      40%{transform:translateX(8px);}
+      60%{transform:translateX(-4px);}
+      80%{transform:translateX(4px);}
+    }
+
+    /* ===== ENIGME 8 STYLES ===== */
+    .phase-bar{display:flex;align-items:center;gap:10px;background:#333340;border:1px solid #3a3a42;border-radius:12px;padding:12px 18px;margin-bottom:24px;}
+    .phase-label{font-size:.7em;color:#999;letter-spacing:2px;white-space:nowrap;}
+    .phase-track{flex:1;height:5px;background:#3a3a42;border-radius:5px;overflow:hidden;}
+    .phase-fill{height:100%;background:linear-gradient(90deg,#00ff41,#00cc33);border-radius:5px;width:0%;transition:width .8s cubic-bezier(.22,1,.36,1);}
+    .phase-dots{display:flex;gap:6px;}
+    .pdot{width:10px;height:10px;border-radius:50%;background:#3a3a42;border:1px solid #555;transition:all .4s;}
+    .pdot.done{background:#00ff41;border-color:#00ff41;box-shadow:0 0 8px #00ff4166;}
+    .pdot.active{border-color:#00ff41;animation:dpulse 1.5s ease-in-out infinite;}
+    @keyframes dpulse{0%,100%{box-shadow:0 0 4px #00ff4133}50%{box-shadow:0 0 14px #00ff4166}}
+    .obj-box{background:#1a2a1a;border:1px solid #00ff4133;border-left:3px solid #00ff41;border-radius:8px;padding:14px 18px;margin-bottom:18px;font-size:.85em;color:#b0f0b0;line-height:1.7;}
+    .obj-box strong{color:#00ff41;}
+    .photo-zone{position:relative;border:2px solid #3a3a42;border-radius:12px;overflow:hidden;background:#1e1e26;margin-bottom:20px;text-align:center;}
+    .photo-zone img{display:block;width:100%;max-height:380px;object-fit:contain;background:#1e1e26;}
+    .photo-scan{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 45%,rgba(0,255,65,.05) 50%,transparent 55%);animation:scanp 4s ease-in-out infinite;}
+    @keyframes scanp{0%{transform:translateY(-100%)}100%{transform:translateY(200%)}}
+    .photo-label{padding:10px;font-size:.72em;color:#555;letter-spacing:1px;border-top:1px solid #3a3a42;}
+    .photo-placeholder{min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#444;font-size:.85em;line-height:1.8;padding:30px;}
+    .photo-placeholder .ph-icon{font-size:3em;margin-bottom:12px;opacity:.4;}
+    .instr-row{background:#2a2a32;border:1px solid #3a3a42;border-left:3px solid #ffaa00;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:.82em;color:#ffcc77;line-height:1.7;display:flex;align-items:flex-start;gap:10px;}
+    .instr-row .wi{font-size:1.2em;flex-shrink:0;margin-top:1px;}
+    .att-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:.73em;color:#777;}
+    .adot{width:9px;height:9px;border-radius:50%;background:#00ff41;box-shadow:0 0 6px #00ff4144;transition:all .3s;}
+    .adot.used{background:#ff4444;box-shadow:0 0 6px #ff444444;}
+    .props-label{font-family:'Orbitron',sans-serif;font-size:.75em;color:#00ff41;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+    .props-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#00ff4133,transparent);}
+    .prop-btn{width:100%;background:#2a2a32;border:1px solid #3a3a42;border-radius:10px;padding:14px 18px;margin-bottom:10px;cursor:pointer;text-align:left;transition:all .25s ease;display:flex;align-items:flex-start;gap:12px;position:relative;overflow:hidden;}
+    .prop-btn:hover:not(:disabled){border-color:#00ff4155;background:#1e2e1e;transform:translateX(4px);}
+    .prop-btn:disabled{cursor:default;transform:none!important;}
+    .prop-btn.selected{border-color:#00ff4188;background:#1a2e1a;}
+    .prop-btn.selected .pnum{background:#00ff4122;border-color:#00ff41;color:#00ff41;}
+    .prop-check{width:20px;height:20px;border:1.5px solid #555;border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:.8em;transition:all .2s;background:#2a2a32;}
+    .prop-btn.selected .prop-check{background:#00ff41;border-color:#00ff41;color:#000;}
+    .prop-btn.correct .prop-check{background:#00ff41;border-color:#00ff41;color:#000;}
+    .prop-btn.wrong .prop-check{background:#ff4444;border-color:#ff4444;color:#fff;}
+    .prop-btn.missed .prop-check{background:#ffaa00;border-color:#ffaa00;color:#000;}
+    .pnum{min-width:28px;height:28px;background:#3a3a42;border:1px solid #555;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:.8em;font-weight:700;color:#aaa;flex-shrink:0;transition:all .25s;}
+    .prop-text{font-size:.85em;color:#ccc;line-height:1.6;padding-top:3px;}
+    .prop-btn.correct{border-color:#00ff41!important;background:#0d2a0d!important;}
+    .prop-btn.correct .pnum{background:#00ff41!important;border-color:#00ff41!important;color:#000!important;}
+    .prop-btn.correct .prop-text{color:#90ff90!important;}
+    .prop-btn.wrong{border-color:#ff4444!important;background:#2a0d0d!important;opacity:.7;}
+    .prop-btn.wrong .pnum{background:#ff444422!important;border-color:#ff4444!important;color:#ff4444!important;}
+    .prop-btn.wrong .prop-text{color:#ff9999!important;}
+    .prop-btn.missed{border-color:#ffaa0088!important;background:#2a1e0a!important;opacity:.8;}
+    .prop-btn.missed .pnum{background:#ffaa0022!important;border-color:#ffaa00!important;color:#ffaa00!important;}
+    .prop-btn.missed .prop-text{color:#ffcc77!important;}
+    .btn-validate{font-family:'Orbitron',sans-serif;font-size:.8em;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:transparent;border:2px solid #00ff41;color:#00ff41;padding:13px 28px;border-radius:8px;cursor:pointer;position:relative;overflow:hidden;transition:all .3s ease;margin-top:6px;}
+    .btn-validate::before{content:'';position:absolute;inset:0;background:#00ff41;opacity:0;transition:opacity .3s;}
+    .btn-validate:hover{color:#000;box-shadow:0 0 30px #00ff4144;}
+    .btn-validate:hover::before{opacity:1;}
+    .btn-validate span{position:relative;z-index:1;}
+    .btn-validate:disabled{opacity:.3;cursor:not-allowed;}
+    .btn-validate:disabled:hover{color:#00ff41;box-shadow:none;}
+    .btn-validate:disabled:hover::before{opacity:0;}
+    .feedback-box{display:none;margin-top:16px;border-radius:10px;padding:18px 22px;animation:fadein .5s ease-out;}
+    .feedback-box.show{display:block;}
+    .feedback-box.ok{background:#0a1f0a;border:1px solid #00ff4155;}
+    .feedback-box.bad{background:#1f0a0a;border:1px solid #ff444455;}
+    .fb-title{font-family:'Orbitron',sans-serif;font-size:1em;font-weight:700;margin-bottom:8px;}
+    .feedback-box.ok .fb-title{color:#00ff41;}
+    .feedback-box.bad .fb-title{color:#ff6666;}
+    .fb-body{font-size:.82em;line-height:1.75;}
+    .feedback-box.ok .fb-body{color:#80c880;}
+    .feedback-box.bad .fb-body{color:#c88080;}
+    .fb-score{margin-top:10px;font-size:.78em;color:#888;border-top:1px solid #3a3a42;padding-top:10px;}
+    .btn-next-photo{display:inline-block;margin-top:14px;font-family:'Orbitron',sans-serif;font-size:.78em;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:transparent;border:2px solid #00ff41;color:#00ff41;padding:11px 24px;border-radius:8px;cursor:pointer;position:relative;overflow:hidden;transition:all .3s;}
+    .btn-next-photo::before{content:'';position:absolute;inset:0;background:#00ff41;opacity:0;transition:opacity .3s;}
+    .btn-next-photo:hover{color:#000;}
+    .btn-next-photo:hover::before{opacity:1;}
+    .btn-next-photo span{position:relative;z-index:1;}
+    .code-reveal-final{display:none;text-align:center;background:#0a1f0a;border:1px solid #00ff4166;border-radius:12px;padding:24px;margin-top:20px;animation:fadein .5s ease-out;}
+    .code-reveal-final.show{display:block;}
+    .code-reveal-final p{font-size:.75em;color:#888;margin-bottom:10px;text-transform:uppercase;letter-spacing:2px;}
+    .code-val{font-family:'Orbitron',sans-serif;font-size:2em;font-weight:900;color:#00ff41;letter-spacing:8px;text-shadow:0 0 20px #00ff4166;}
+    .code-rule{margin-top:12px;font-size:.78em;color:#666;line-height:1.6;}
+    .success-screen{display:none;}.success-screen.show{display:block;}
+    .success-icon{text-align:center;font-size:3.5em;margin-bottom:10px;animation:spop .6s cubic-bezier(.175,.885,.32,1.275);}
+    @keyframes spop{from{transform:scale(0)}to{transform:scale(1)}}
+    .success-rule-box{background:#00ff4108;border:1px solid #00ff4122;border-radius:10px;padding:18px;margin:18px 0;text-align:center;}
+    .success-rule-box p{font-family:'Orbitron',sans-serif;font-size:.9em;color:#00ff41;line-height:1.6;}
+    .result-msg{margin-top:12px;font-size:.85em;min-height:1.2em;}
+    .result-msg.err{color:#ff4444;text-shadow:0 0 10px #ff444433;}
+    .result-msg.ok2{color:#00ff41;}
+
+    /* ===== ENIGME 9 STYLES ===== */
+    #enigme-9 .e9-header {
+      border: 1px solid #3a3a42;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #313644, #2a2d36);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    #enigme-9 .e9-intro {
+      font-size: 0.9em;
+      color: #b7bdcb;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+    #enigme-9 .e9-status {
+      margin-top: 12px;
+      border: 1px solid #00ff7526;
+      background: linear-gradient(180deg, #1f2f2a, #24332f);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    #enigme-9 .e9-status-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.78em;
+      color: #9bd8b1;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    #enigme-9 .e9-code-display {
+      font-family: 'Share Tech Mono', monospace;
+      letter-spacing: 4px;
+      color: #fff;
+    }
+    #enigme-9 .e9-progress {
+      height: 8px;
+      background: #2e3837;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    #enigme-9 .e9-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00ff75, #2dd4bf);
+      box-shadow: 0 0 16px rgba(0, 255, 117, 0.45);
+      transition: width 0.35s ease;
+    }
+    #enigme-9 .e9-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    #enigme-9 .e9-card {
+      border: 1px solid #3f4350;
+      background: linear-gradient(180deg, #333640, #2f323c);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    #enigme-9 .e9-card h3 {
+      font-size: 1.05em;
+      margin-bottom: 4px;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+    }
+    #enigme-9 .e9-sub {
+      color: #8f95a5;
+      font-size: 0.8em;
+      margin-bottom: 10px;
+    }
+    #enigme-9 .e9-chart {
+      display: block;
+      width: 100%;
+      height: 300px;
+      background: #252832;
+      border: 1px solid #3c404d;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+    #enigme-9 .e9-question {
+      font-size: 0.9em;
+      color: #e9edf7;
+      margin-bottom: 8px;
+    }
+    #enigme-9 .e9-options {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    #enigme-9 .e9-options label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid #424856;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #2b2f39;
+      cursor: pointer;
+      transition: border-color 0.25s ease, background 0.25s ease;
+      font-size: 0.86em;
+    }
+    #enigme-9 .e9-options label:hover {
+      border-color: #00ff7542;
+      background: #2d3540;
+    }
+    #enigme-9 input[type="radio"] {
+      accent-color: #00ff75;
+    }
+    #enigme-9 .e9-feedback {
+      min-height: 20px;
+      margin-top: 6px;
+      font-size: 0.84em;
+      font-weight: 700;
+    }
+    #enigme-9 .e9-feedback.ok {
+      color: #00ff75;
+    }
+    #enigme-9 .e9-feedback.ko {
+      color: #ff4d6d;
+    }
+    #enigme-9 .e9-feedback.warn {
+      color: #ffb84d;
+    }
+    #enigme-9 .e9-lock {
+      margin-top: 14px;
+      border: 1px solid #3f4350;
+      background: linear-gradient(180deg, #343844, #2d303b);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    #enigme-9 .e9-lock h3 {
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 8px;
+      font-size: 1em;
+    }
+    #enigme-9 .e9-lock-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    #enigme-9 .e9-lock-row input {
+      flex: 1;
+      min-width: 180px;
+      border: 1px solid #4b4f5e;
+      border-radius: 8px;
+      background: #272a35;
+      color: #f4f6ff;
+      font-family: 'Share Tech Mono', monospace;
+      letter-spacing: 2px;
+      padding: 9px 10px;
+      text-transform: uppercase;
+    }
+    #enigme-9 .e9-lock-result {
+      margin-top: 10px;
+      font-size: 0.86em;
+      min-height: 20px;
+      font-weight: 700;
+    }
+
+    /* ===== ENIGME 10 STYLES ===== */
+    #enigme-10 .animal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 700px) {
+      #enigme-10 .animal-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .animal-card {
+      background: #2a2a32;
+      border: 1px solid #3a3a42;
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      overflow: hidden;
+    }
+    .animal-card:hover:not(:disabled) {
+      border-color: #00ff4155;
+      box-shadow: 0 0 20px #00ff4111;
+      transform: translateY(-2px);
+    }
+    .animal-card:disabled {
+      cursor: default;
+    }
+    .animal-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #3a3a42;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .animal-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85em;
+      color: #00ff41;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .animal-card.correct {
+      border-color: #00ff41 !important;
+      background: #0d2a0d !important;
+      box-shadow: 0 0 20px #00ff4133;
+    }
+    .animal-card.wrong {
+      border-color: #ff4444 !important;
+      background: #2a0d0d !important;
+      opacity: 0.7;
+    }
+    .animal-card.revealed {
+      border-color: #555 !important;
+      opacity: 0.45;
+    }
+    #enigme-10 .animal-attempts {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: 0.9em;
+    }
+    #enigme-10 .attempt-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #00ff41;
+      box-shadow: 0 0 8px #00ff4166;
+    }
+    #enigme-10 .attempt-dot.used {
+      background: #555;
+      box-shadow: none;
+    }
+    #enigme-10 .code-reveal-small {
+      display: none;
+      margin-top: 14px;
+      background: #0d2a0d;
+      border: 1px solid #00ff4144;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85em;
+      color: #9af7a8;
+      line-height: 1.7;
+    }
+    #enigme-10 .code-reveal-small.show {
+      display: block;
+      animation: fadeSlideIn 0.4s ease-out;
+    }
+    .feedback-box {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #3a3a42;
+      background: #2a2a32;
+    }
+    .feedback-box.success {
+      border-color: #00ff4144;
+      background: #0d2a0d;
+      color: #9af7a8;
+    }
+    .feedback-box.error {
+      border-color: #ff444466;
+      background: #2a0d0d;
+      color: #ff9999;
+    }
+    .feedback-box.show {
+      display: block;
+    }
+    .feedback-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-size: 0.95em;
+    }
+    .feedback-body {
+      font-size: 0.85em;
+      line-height: 1.5;
+    }
+
   </style>
 </head>
 <body>
@@ -843,8 +1676,12 @@
       <div class="progress-dot" id="dot-4"></div>
       <div class="progress-dot" id="dot-5"></div>
       <div class="progress-dot" id="dot-6"></div>
+      <div class="progress-dot" id="dot-7"></div>
+      <div class="progress-dot" id="dot-8"></div>
+      <div class="progress-dot" id="dot-9"></div>
+      <div class="progress-dot" id="dot-10"></div>
     </div>
-    <span class="progress-label" id="progress-text">0 / 6</span>
+    <span class="progress-label" id="progress-text">0 / 10</span>
   </div>
 </div>
 
@@ -873,7 +1710,7 @@
 
   <!-- ====== ENIGME 1 : La source ====== -->
   <section class="card hidden" id="enigme-1">
-    <h2><span class="icon">&#x1F9EC;</span> Énigme 1/6 — Faux posts</h2>
+    <h2><span class="icon">&#x1F9EC;</span> Énigme 1/10 — Faux posts</h2>
     <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 a publié un faux post sur les réseaux sociaux. Ce post utilise des photos qui ne correspondent pas à ce qu'il prétend montrer. Analysez les images et les informations du document pour retrouver <strong style="color:#00ff41;">d'où viennent réellement ces images</strong> <strong style="color:#00ff41;"></strong>.</p>
     <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Téléchargez et consultez le <strong style="color:#aaa;">Document PDF  </strong> pour résoudre cette énigme.</p>
 
@@ -914,7 +1751,7 @@
 
   <!-- ====== ENIGME 2 : Vérification d'information avec Internet ====== -->
   <section class="card hidden" id="enigme-2">
-    <h2><span class="icon">&#x1F310;</span> Énigme 2/6 — Désinformation géopolitique</h2>
+    <h2><span class="icon">&#x1F310;</span> Énigme 2/10 — Désinformation géopolitique</h2>
     <p><strong style="color:#fff;">Objectif :</strong> Vérifier si une information publiée en ligne est vraie ou non. Utilisez Internet et vos connaissances pour déterminer la véracité de cette publication.</p>
     
     <div style="background:#2a2a32; border:1px solid #3a3a42; border-left:3px solid #ff4444; padding:16px; border-radius:8px; margin:16px 0;">
@@ -931,6 +1768,7 @@
     
     <div style="background:#1a3a2a; border:1px solid #00ff4133; padding:12px; border-radius:8px; margin:16px 0;">
       <p style="color:#00ff41; font-size:0.85em; line-height:1.6;"><strong>💡 ANALYSE REQUISE :</strong> Vérifiez rapidement si cette information est vraie en consultant des sources officielles, des factcheckers ou des agences de presse réputées. Utilisez votre moteur de recherche pour vérifier les déclarations.</p>
+      <p style="color:#88ff88; font-size:0.82em; margin-top:8px;"><strong>Possibilités :</strong> Vrai ou Faux</p>
     </div>
 
     <div class="input-group">
@@ -968,7 +1806,7 @@
 
   <!-- ====== ENIGME 3 : Bots et faux comptes ====== -->
   <section class="card hidden" id="enigme-3">
-    <h2><span class="icon">&#x1F916;</span> Énigme 3/6 — Les faux comptes</h2>
+    <h2><span class="icon">&#x1F916;</span> Énigme 3/10 — Les faux comptes</h2>
     <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise des bots pour amplifier ses messages sur les réseaux sociaux. Vous devez analyser un fil Snapgram et identifier tous les bots cachés parmi les commentaires.</p>
     
     <div style="background:#1a3a2a; border:1px solid #00ff4133; padding:16px; border-radius:8px; margin:16px 0;">
@@ -1027,19 +1865,60 @@
 
   <!-- ====== ENIGME 4 : Profil suspect ====== -->
   <section class="card hidden" id="enigme-4">
-    <h2><span class="icon">&#x1F464;</span> Énigme 4/6 — L'élément suspect</h2>
-    <p><strong style="color:#fff;">Objectif :</strong> Un élément ne va pas sur cette image, une coupe de cheveux qui ne correspond pas. Trouvez à quelle personne appartient réellement cette coupe de cheveux !</p>
-    
-    <div style="margin:16px 0; text-align:center;">
-      <img src="enigme4_image.jpg" alt="Image Énigme 4" style="max-width:250px; height:auto; border:2px solid #00ff41; border-radius:8px; box-shadow:0 0 20px #00ff4133;">
+    <div class="phase-bar" id="phase-bar-4">
+      <span class="phase-label">Photos</span>
+      <div class="phase-track"><div class="phase-fill" id="phase-fill-4"></div></div>
+      <div class="phase-dots">
+        <div class="pdot" id="pdot-4-1"></div>
+        <div class="pdot" id="pdot-4-2"></div>
+      </div>
+      <span class="phase-label" id="phase-txt-4">0 / 2</span>
     </div>
 
-    <div class="input-group">
+    <h2><span class="icon">&#x1F5BC;&#xFE0F;</span> Énigme 4/10 — L'image truquée <span id="round-num-4">1</span>/2</h2>
+
+    <div class="objective-box" id="obj-box-4">
+      <strong>🎯 Mission :</strong> Deux manches à compléter : vous devez trouver l'unique image fausse parmi les 4 propositions.
+    </div>
+
+    <div class="photo-label" id="round-label-4">Série Mbappé — cliquez sur l'image fausse</div>
+
+    <div class="attempts-row">
+      <span>Tentatives restantes :</span>
+      <div class="attempt-dot" id="att-4-1"></div>
+      <div class="attempt-dot" id="att-4-2"></div>
+      <div class="attempt-dot" id="att-4-3"></div>
+    </div>
+
+    <div class="choices-label">// cliquez sur l'image fausse</div>
+    <div class="image-choices-grid" id="image-grid-4"></div>
+
+    <div class="feedback-box" id="feedback-4-correct" role="alert">
+      <div class="feedback-title">✅ Bonne détection</div>
+      <div class="feedback-body" id="feedback-4-correct-text"></div>
+      <button class="btn btn-next" id="btn-next-round-4" onclick="nextRound4()"><span>Manche suivante &#x27A1;</span></button>
+    </div>
+
+    <div class="feedback-box error" id="feedback-4-wrong" role="alert">
+      <div class="feedback-title">❌ Mauvais choix</div>
+      <div class="feedback-body" id="feedback-4-wrong-text">
+        Cette image semble authentique. Recomparez les détails.
+      </div>
+      <button class="btn btn-secondary retry-e4" id="btn-retry-4" onclick="resetRound4()"><span>Réessayer</span></button>
+    </div>
+
+    <div class="code-reveal-small" id="code-4-reveal">
+      // code de validation débloqué<br>
+      <span class="code-inline">DETAILS</span>
+    </div>
+
+    <div class="input-group" id="card-code-4" style="display:none;">
       <label>// entrez le code découvert :</label>
       <div class="input-row">
-        <input class="input" id="code-4" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <input class="input" id="code-4" placeholder="Entrez le code ici" autocomplete="off" spellcheck="false">
         <button class="btn" onclick="checkEnigme4()"><span>Valider</span></button>
       </div>
+      <p class="result-msg" id="result-4"></p>
     </div>
 
     <div class="hint-bar">
@@ -1052,24 +1931,22 @@
       </div>
       <div class="hint-text" id="hint-text-4"></div>
     </div>
-
-    <p class="result-msg" id="result-4"></p>
   </section>
 
   <!-- ====== SUCCESS 4 ====== -->
   <section class="card hidden" id="success-4">
     <div class="success-icon">&#x1F513;</div>
     <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 4 résolue</h2>
-    <p style="text-align:center; color:#888;">Faux profil identifié : <strong style="color:#00ff41;">Profil D</strong> — 3 anomalies détectées</p>
+    <p style="text-align:center; color:#888;">Les deux séries ont été analysées avec succès.</p>
     <div class="success-rule">
-      <p>&#x1F464; Règle n&deg;4 : Un profil avec une photo trop parfaite, une bio incohérente et un historique suspect est probablement faux.</p>
+      <p>&#x1F4F8; Règle n&deg;4 : Une image peut sembler crédible au premier regard. Vérifiez les détails visuels incohérents (couleurs, textures, éléments anatomiques) avant de croire une photo.</p>
     </div>
     <button class="btn btn-next" onclick="startEnigme(5)"><span>Énigme suivante &#x27A1;</span></button>
   </section>
 
   <!-- ====== ENIGME 5 : Le hoax ====== -->
   <section class="card hidden" id="enigme-5">
-    <h2><span class="icon">&#x1F4A0;</span> Énigme 5/6 — Piégé par les pop-ups</h2>
+    <h2><span class="icon">&#x1F4A0;</span> Énigme 5/10 — Piégé par les pop-ups</h2>
     <p><strong style="color:#fff;">Objectif :</strong> OMBRE-9 utilise des pop-ups piégés pour arnaquer les utilisateurs. Fermez les 30 pop-ups d'un site web sans cliquer sur les mauvais boutons et évitez de vous faire scammer pour obtenir le code !</p>
     
     <div style="margin:16px 0; text-align:center;">
@@ -1111,11 +1988,14 @@
     <button class="btn btn-next" onclick="startEnigme(6)"><span>Énigme suivante &#x27A1;</span></button>
   </section>
 
-  <!-- ====== ENIGME 6 : Canular / Satire ====== -->
+  <!-- ====== ENIGME 6 : Phishing Anamoz ====== -->
   <section class="card hidden" id="enigme-6">
-    <h2><span class="icon">&#x1F921;</span> Énigme 6/6 — Satire ou réalité ?</h2>
-    <p><strong style="color:#fff;">Objectif :</strong> Certains articles semblent vrais mais viennent de sites satiriques. D'autres semblent faux mais sont réels. Saurez-vous faire la différence ?</p>
-    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F4C4; Consultez le <strong style="color:#aaa;">Document 6</strong> distribué par votre instructeur pour résoudre cette énigme.</p>
+    <h2><span class="icon">&#x1F4E7;</span> Énigme 6/10 — Phishing Anamoz</h2>
+    <p><strong style="color:#fff;">Objectif :</strong> Analysez un email frauduleux imitant Amazon, identifiez les signaux de phishing, puis récupérez le code mission affiché à la fin.</p>
+    <p style="color:#888; font-size:0.9em; margin-top:8px;">&#x1F517; Ouvrez l'énigme dédiée dans un nouvel onglet et revenez ici avec le code final.</p>
+    <div style="margin-top:10px;">
+      <button class="btn" onclick="openPhishingEnigme()"><span>Ouvrir l'énigme phishing</span></button>
+    </div>
 
     <div class="input-group">
       <label>// entrez le code découvert :</label>
@@ -1143,11 +2023,348 @@
   <section class="card hidden" id="success-6">
     <div class="success-icon">&#x1F513;</div>
     <h2 style="justify-content:center;"><span class="icon">&#x2705;</span> Énigme 6 résolue</h2>
-    <p style="text-align:center; color:#888;">Articles satiriques identifiés : <strong style="color:#00ff41;">A et C</strong></p>
+    <p style="text-align:center; color:#888;">Email frauduleux identifié : <strong style="color:#00ff41;">Anamoz</strong></p>
     <div class="success-rule">
-      <p>&#x1F921; Règle n&deg;6 : Toujours vérifier le nom du site. Un site satirique (Le Gorafi, Nordpresse...) n'est pas une source d'information fiable.</p>
+      <p>&#x1F6E1;&#xFE0F; Règle n&deg;6 : Ne jamais cliquer sous pression. Vérifiez toujours l'expéditeur, l'URL et les demandes d'informations sensibles.</p>
     </div>
-    <button class="btn btn-next" onclick="showFinal()"><span>Voir le rapport final &#x27A1;</span></button>
+    <button class="btn btn-next" onclick="startEnigme(7)"><span>Énigme suivante &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== ENIGME 7 : La Bonne Chronique ====== -->
+  <section class="card hidden" id="enigme-7">
+    <h2><span class="icon">📰</span> Énigme 7/10 — La Bonne Chronique</h2>
+
+    <div class="objective-box">
+      <strong>🎯 Mission :</strong> Un journaliste a vu plusieurs rumeurs liées à cette image, laquelle est la bonne ? Utilisez Internet pour retrouver l'histoire réelle et choisissez la légende véridique parmi les trois propositions.
+    </div>
+
+    <!-- JOURNALIST BADGE -->
+    <div class="journalist-badge">
+      <div class="journalist-avatar">✍️</div>
+      <div class="journalist-info">
+        <div class="name">Journaliste M. Durand</div>
+        <div class="role">Chronique faits divers — Rédaction OMBRE News</div>
+      </div>
+    </div>
+
+    <!-- PHOTO -->
+    <div class="photo-wrapper">
+      <div class="photo-container">
+        <img src="photo/cheval piscine.jpg"
+             alt="Cheval dans une piscine entouré de pompiers en combinaison"
+             onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#666;font-family:Share Tech Mono,monospace;font-size:0.85em;\'>📷 Image : cheval dans une piscine<br>entouré de pompiers en combinaison de plongée</div>'">
+        <div class="photo-scan"></div>
+      </div>
+      <p class="photo-label">📷 Source : image interceptée — date et lieu à déterminer</p>
+    </div>
+
+    <!-- INSTRUCTION -->
+    <div class="instruction-row">
+      <span class="warn-icon">🔍</span>
+      <span>Cherchez sur Internet les informations liées à cette image : <strong>qui, quoi, où, quand</strong>. Identifiez la légende correcte parmi les trois propositions ci-dessous.</span>
+    </div>
+
+    <!-- ATTEMPTS -->
+    <div class="attempts-row">
+      <span>Tentatives restantes :</span>
+      <div class="attempt-dot" id="att-7-1"></div>
+      <div class="attempt-dot" id="att-7-2"></div>
+      <div class="attempt-dot" id="att-7-3"></div>
+    </div>
+
+    <!-- CHOICES -->
+    <div class="choices-label">// choisissez la légende</div>
+
+    <button class="choice-btn" id="choice-7-1" onclick="selectChoice7(1)">
+      <div class="choice-num">1</div>
+      <div class="choice-text">
+        Le 5 décembre 2024, un cheval s'est enfui de son enclos et est tombé dans une piscine particulière à Rigny-le-Ferron (Aube). Les pompiers ont dû intervenir pour le sauver. Opération réussie : Nipper va bien !
+      </div>
+    </button>
+
+    <button class="choice-btn" id="choice-7-2" onclick="selectChoice7(2)">
+      <div class="choice-num">2</div>
+      <div class="choice-text">
+        Pour le tournage d'une scène de film, un cheval a dû être plongé dans une piscine. Une équipe de plongeurs des pompiers sont intervenus à Rigny-le-Ferron, dans l'Aube, pour le sortir de l'eau. La piscine a été vidée. Le film devrait sortir à l'automne 2026.
+      </div>
+    </button>
+
+    <button class="choice-btn" id="choice-7-3" onclick="selectChoice7(3)">
+      <div class="choice-num">3</div>
+      <div class="choice-text">
+        L'été dernier, une ado a voulu faire de l'aquaponey et a plongé son cheval dans la piscine de ses grands-parents. Les pompiers ont été prévenus et une équipe de Rigny-le-Ferron est intervenue. Nipper est sain et sauf.
+      </div>
+    </button>
+
+    <!-- FEEDBACK -->
+    <div class="feedback-box" id="feedback-7-correct" role="alert">
+      <div class="feedback-title">✅ BONNE RÉPONSE — Légende authentifiée</div>
+      <div class="feedback-body">
+        Excellent ! La légende 1 est véridique : le cheval <strong style="color:#00ff41;">Nipper</strong> a été sauvé par les pompiers à Rigny-le-Ferron.<br>
+        Le code à entrer est : <strong style="color:#00ff41;">NIPPER</strong><br><br>
+        🧠 <em>Les autres légendes mélangent faits vrais et fiction — typique de la désinformation !</em>
+      </div>
+    </div>
+
+    <div class="feedback-box error" id="feedback-7-wrong" role="alert">
+      <div class="feedback-title">❌ MAUVAISE RÉPONSE — Vérifiez vos sources</div>
+      <div class="feedback-body" id="feedback-7-wrong-text">
+        Ce n'est pas la bonne légende. Cherchez plus précisément : quel est le nom du cheval ? Dans quelle commune de l'Aube cela s'est-il passé ? À quelle date ?
+      </div>
+    </div>
+
+    <div class="source-box" id="source-7-box">
+      <p>🔎 <strong>Sources à consulter :</strong> Tapez dans votre moteur de recherche "cheval piscine Rigny-le-Ferron pompiers" — vous trouverez des articles de L'Est Éclair, France Bleu Champagne-Ardenne et d'autres médias régionaux datés de décembre 2024.</p>
+    </div>
+
+    <!-- CODE REVEAL -->
+    <div class="code-reveal" id="code-7-reveal">
+      <p>// code de validation débloqué</p>
+      <div class="code-value">NIPPER</div>
+      <div class="code-rule">🏆 Règle n°7 : Une légende convaincante peut mélanger des faits vrais et une histoire fictive. Cherchez toujours les détails vérifiables : noms, dates, lieux.</div>
+    </div>
+
+    <!-- HINT BAR -->
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint7()"><span>💡 Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint7()"><span>◀ Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-7-1"></div>
+        <div class="hint-dot" id="hint-dot-7-2"></div>
+        <div class="hint-dot" id="hint-dot-7-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-7"></div>
+    </div>
+
+    <div class="input-group">
+      <label>// entrez le code découvert :</label>
+      <div class="input-row">
+        <input class="input" id="code-7" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkEnigme7()"><span>Valider</span></button>
+      </div>
+    </div>
+
+    <p class="result-msg" id="result-7"></p>
+
+  </section>
+
+  <!-- ====== SUCCESS 7 ====== -->
+  <section class="card hidden" id="success-7">
+    <div class="success-icon">📰</div>
+    <h2 style="justify-content:center;"><span class="icon">✅</span> Énigme 7 résolue</h2>
+    <p style="text-align:center; color:#888;">Légende vérifiée : <strong style="color:#00ff41;">Cheval Nipper sauvé par les pompiers</strong></p>
+    <div class="success-rule">
+      <p>📰 Règle n°7 : Une légende convaincante peut mélanger des faits vrais et une histoire fictive. Cherchez toujours les détails vérifiables : noms, dates, lieux.</p>
+    </div>
+    <button class="btn btn-next" onclick="startEnigme(8)"><span>Énigme suivante &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== ENIGME 8 ====== -->
+  <section class="card hidden" id="enigme-8">
+    <div class="phase-bar" id="phase-bar">
+      <span class="phase-label">Photos</span>
+      <div class="phase-track"><div class="phase-fill" id="phase-fill"></div></div>
+      <div class="phase-dots">
+        <div class="pdot" id="pdot-1"></div>
+        <div class="pdot" id="pdot-2"></div>
+        <div class="pdot" id="pdot-3"></div>
+        <div class="pdot" id="pdot-4"></div>
+      </div>
+      <span class="phase-label" id="phase-txt">0 / 4</span>
+    </div>
+
+    <h2><span class="icon">🔍</span> Énigme 8/10 — Analyse d'image <span id="card-title-num">1</span>/4</h2>
+
+    <div class="obj-box" id="obj-box">
+      <strong>🎯 Mission :</strong> OMBRE-9 diffuse des images manipulées ou mensongères pour tromper l'opinion publique. Votre mission : repérer toutes les <strong>erreurs, incohérences ou manipulations</strong> dans chaque image. Cochez UNIQUEMENT les erreurs de génération.
+    </div>
+
+    <div class="photo-zone" id="photo-zone">
+      <div class="photo-placeholder" id="photo-placeholder">
+        <div class="ph-icon">📷</div>
+        <div id="photo-desc">Image de la photo 1 ici</div>
+      </div>
+      <div class="photo-scan"></div>
+    </div>
+    <div class="photo-label" id="photo-label">📷 Image interceptée — analysez les détails</div>
+
+    <div class="att-row" id="att-row">
+      <span>Tentatives :</span>
+      <div class="adot" id="a1"></div>
+      <div class="adot" id="a2"></div>
+      <div class="adot" id="a3"></div>
+    </div>
+
+    <div class="props-label">// sélectionnez les erreurs</div>
+    <div id="props-container"></div>
+
+    <button class="btn-validate" id="btn-validate" onclick="validateAnswerE8()">
+      <span>✔ Valider ma sélection</span>
+    </button>
+
+    <div class="feedback-box ok" id="fb-ok">
+      <div class="fb-title" id="fb-ok-title">✅ BONNE ANALYSE</div>
+      <div class="fb-body" id="fb-ok-body"></div>
+      <div class="fb-score" id="fb-score"></div>
+      <button class="btn-next-photo" id="btn-next-photo" onclick="nextPhotoE8()">
+        <span>Photo suivante ➡</span>
+      </button>
+    </div>
+
+    <div class="feedback-box bad" id="fb-bad">
+      <div class="fb-title">❌ ANALYSE INCORRECTE</div>
+      <div class="fb-body" id="fb-bad-body"></div>
+    </div>
+
+    <div class="code-reveal-final" id="code-final">
+      <p>// code de validation débloqué</p>
+      <div class="code-val">DEEPFAKE</div>
+      <div class="code-rule">🏆 Règle n°8 : Les images peuvent être facilement manipulées. Analyser les détails, les ombres, les proportions et le contexte permet de détecter les faux.</div>
+    </div>
+
+    <div class="input-group" id="card-code" style="display:none;margin-top:24px;">
+      <label>// entrez le code découvert :</label>
+      <div class="input-row">
+        <input class="input" id="code-input" placeholder="Entrez le code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkCodeE8()"><span>Valider</span></button>
+      </div>
+      <p class="result-msg" id="result-final"></p>
+    </div>
+
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint(8)"><span>&#x1F4A1; Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint(8)"><span>&#x2B05; Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-8-1"></div>
+        <div class="hint-dot" id="hint-dot-8-2"></div>
+        <div class="hint-dot" id="hint-dot-8-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-8"></div>
+    </div>
+  </section>
+
+  <!-- ====== SUCCESS 8 ====== -->
+  <section class="card hidden" id="success-8">
+    <div class="success-icon">🔍</div>
+    <h2 style="justify-content:center;"><span class="icon">✅</span> Énigme 8 résolue</h2>
+    <p style="text-align:center; color:#888;">Toutes les manipulations ont été identifiées.</p>
+    <div class="success-rule">
+      <p>🔍 Règle n°8 : Analyser les ombres, les proportions et le contexte d'une image permet de détecter les manipulations. Les IA révèlent leurs défauts par des détails incohérents : doigts mal formés, logos manquants, reflets impossibles.</p>
+    </div>
+    <button class="btn btn-next" onclick="startEnigme(9)"><span>Énigme suivante &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== ENIGME 9 ====== -->
+  <section class="card hidden" id="enigme-9">
+    <h2><span class="icon">📊</span> Énigme 9/10 — Le graphique menteur</h2>
+
+    <div class="objective-box">
+      <strong>🎯 Mission :</strong> Ouvrez l'énigme externe, résolvez-la et récupérez le code final affiché.
+    </div>
+
+    <div style="margin:16px 0; text-align:center;">
+      <a href="enigme9.html" target="_blank" style="display:inline-block; background:#00ff41; color:#000; padding:14px 32px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.95em; cursor:pointer; box-shadow:0 0 20px #00ff4144; transition:all 0.3s;">
+        🔗 Ouvrir l'énigme 9
+      </a>
+    </div>
+
+    <div class="input-group">
+      <label>// entrez le code trouvé sur enigme9.html :</label>
+      <div class="input-row">
+        <input class="input" id="code-9" placeholder="Entrez votre code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkEnigme9()"><span>Valider</span></button>
+      </div>
+    </div>
+
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint9()"><span>&#x1F4A1; Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint9()"><span>&#x2B05; Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-9-1"></div>
+        <div class="hint-dot" id="hint-dot-9-2"></div>
+        <div class="hint-dot" id="hint-dot-9-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-9"></div>
+    </div>
+
+    <p class="result-msg" id="result-9"></p>
+  </section>
+
+  <!-- ====== SUCCESS 9 ====== -->
+  <section class="card hidden" id="success-9">
+    <div class="success-icon">📊</div>
+    <h2 style="justify-content:center;"><span class="icon">✅</span> Énigme 9 résolue</h2>
+    <p style="text-align:center; color:#888;">Manipulations de graphiques identifiées : <strong style="color:#00ff41;">AXES</strong></p>
+    <div class="success-rule">
+      <p>📈 Règle n°9 : un graphique peut mentir via des axes tronqués, des doubles échelles ou des totaux incohérents. Vérifiez toujours l'échelle et la source.</p>
+    </div>
+    <button class="btn btn-next" onclick="startEnigme(10)"><span>Énigme suivante &#x27A1;</span></button>
+  </section>
+
+  <!-- ====== ENIGME 10 : ANIMAUX MARINS FAUX ====== -->
+  <section class="card hidden" id="enigme-10">
+    <h2><span class="icon">🦈</span> Énigme 10/10 — L'animal fantôme de la Seine</h2>
+
+    <p style="color:#b0b0b0; font-size:0.95em; margin-bottom:14px; line-height:1.6;">
+      <strong style="color:#00ff41;">Contexte :</strong> OMBRE-9 a diffusé des photos d'animaux marins soi-disant retrouvés dans la Seine pour créer la panique. Parmi ces quatre images interceptées, une est fausse. Votre mission : identifier l'intrus.
+    </p>
+
+    <div style="font-family: 'Share Tech Mono', monospace; font-size: 0.8em; color: #888; margin-bottom: 12px; letter-spacing: 1px;">// cliquez sur l'animal faux</div>
+
+    <div class="animal-attempts" id="animal-attempts-10">
+      <span>Tentatives :</span>
+      <div class="attempt-dot" id="att-10-1"></div>
+      <div class="attempt-dot" id="att-10-2"></div>
+      <div class="attempt-dot" id="att-10-3"></div>
+    </div>
+
+    <div class="animal-grid" id="animal-grid-10"></div>
+
+    <div class="feedback-box success" id="feedback-10-correct">
+      <div class="feedback-title">✅ Excellente détection</div>
+      <div class="feedback-body" id="feedback-10-correct-text">Vous avez trouvé l'animal faux !</div>
+    </div>
+
+    <div class="feedback-box error" id="feedback-10-wrong">
+      <div class="feedback-title">❌ Mauvais choix</div>
+      <div class="feedback-body" id="feedback-10-wrong-text">Ce animal est authentique. Réessayez.</div>
+    </div>
+
+    <div class="code-reveal-small" id="code-10-reveal">
+      // code de validation débloqué<br>
+      <span class="code-inline">OCEAN</span>
+    </div>
+
+    <div class="input-group" id="card-code-10" style="display:none;">
+      <label>// code validé :</label>
+      <div class="input-row">
+        <input class="input" id="code-10" placeholder="Entrez le code ici" autocomplete="off" spellcheck="false">
+        <button class="btn" onclick="checkEnigme10()"><span>Valider</span></button>
+      </div>
+      <p class="result-msg" id="result-10"></p>
+    </div>
+
+    <div class="hint-bar">
+      <button class="btn btn-secondary" onclick="getHint(10)"><span>&#x1F4A1; Indice</span></button>
+      <button class="btn btn-secondary" onclick="previousHint(10)"><span>&#x2B05; Retour</span></button>
+      <div class="hint-dots">
+        <div class="hint-dot" id="hint-dot-10-1"></div>
+        <div class="hint-dot" id="hint-dot-10-2"></div>
+        <div class="hint-dot" id="hint-dot-10-3"></div>
+      </div>
+      <div class="hint-text" id="hint-text-10"></div>
+    </div>
+  </section>
+
+  <!-- ====== SUCCESS 10 ====== -->
+  <section class="card hidden" id="success-10">
+    <div class="success-icon">🦈</div>
+    <h2 style="justify-content:center;"><span class="icon">✅</span> Énigme 10 résolue</h2>
+    <p style="text-align:center; color:#888;">Hoax des animaux de la Seine démasqué</p>
+    <div class="success-rule">
+      <p>🌊 Règle n°10 : OMBRE-9 crée des paniques en diffusant des images fausses d'animaux marins dans la Seine. Même un animal peut être modifié numériquement. Vérifiez les couleurs, textures et cohérences biologiques. Une image générée par IA aura souvent des anomalies subtiles mais détectables.</p>
+    </div>
+    <button class="btn btn-next" onclick="showFinal()"><span>Rapport final &#x27A1;</span></button>
   </section>
 
   <!-- ====== FINAL SCREEN ====== -->
@@ -1156,17 +2373,18 @@
       <div class="success-icon">&#x1F3C6;</div>
       <h2 style="justify-content:center;">MISSION ACCOMPLIE</h2>
       <p style="color:#888;">Agent <strong style="color:#00ff41;" id="final-agent-name"></strong>, vous avez démantelé le réseau OMBRE-9.</p>
-      <div class="final-score" id="final-score">6 / 6</div>
+      <div class="final-score" id="final-score">10 / 10</div>
       <p style="color:#555; font-size:0.85em;">Énigmes résolues</p>
     </div>
     <div class="final-rules">
       <ul style="padding:0;">
-        <li><span class="rule-icon">&#x1F50D;</span> Toujours vérifier la source originale d'une information</li>
-        <li><span class="rule-icon">&#x1F5BC;</span> Se méfier des images sans contexte qui jouent sur les émotions</li>
-        <li><span class="rule-icon">&#x1F916;</span> Repérer les bots : messages identiques, noms aléatoires, timing suspect</li>
-        <li><span class="rule-icon">&#x1F464;</span> Un profil trop parfait avec une bio incohérente est probablement faux</li>
-        <li><span class="rule-icon">&#x1F4E9;</span> Un message qui crée l'urgence et demande de partager est un hoax</li>
-        <li><span class="rule-icon">&#x1F921;</span> Vérifier le site : les sites satiriques ne sont pas des sources fiables</li>
+        <li>Toujours vérifier la source originale d'une information</li>
+        <li>Se méfier des images sans contexte qui jouent sur les émotions</li>
+        <li>Repérer les bots : messages identiques, noms aléatoires, timing suspect</li>
+        <li>Un profil trop parfait avec une bio incohérente est probablement faux</li>
+        <li>Un message qui crée l'urgence et demande de partager est un hoax</li>
+        <li>Vérifier le site : les sites satiriques ne sont pas des sources fiables</li>
+        <li>Chercher les détails vérifiables : noms, dates, lieux pour les légendes d'images</li>
       </ul>
     </div>
     <p style="text-align:center; color:#00ff41; font-family:'Share Tech Mono',monospace; font-size:0.85em; margin-top:16px;">
@@ -1177,7 +2395,7 @@
 </main>
 
 <footer>
-  [ DOSSIER OMBRE-9 - PROTOTYPE PÉDAGOGIQUE - 2026 ]
+  [ DOSSIER OMBRE-9 - 2026 ]
 </footer>
 
 <!-- ===== AMBIENT DECORATIONS ===== -->
@@ -1254,37 +2472,37 @@
 // ==========================================
 var agentName = '';
 var currentEnigme = 0;
-var hintsUsed = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+var hintsUsed = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 8: 0, 9: 0, 10: 0 };
 
 var hints = {
   1: [
     'Les images du post montrent-elles vraiment ce que le texte prétend ? Cherchez des indices visuels.',
-    'Regardez bien les pancartes et les inscriptions sur les photos. Dans quelle langue sont-elles écrites ?',
     'Ces images viennent d\'un autre pays. Le code est le nom de ce pays.'
   ],
   2: [
     'Vérifiez sur des sources réputées (BBC, Reuters, AFP, agences officielles) : Trump a-t-il vraiment annexé le Groenland ?',
-    'Cherchez des factcheckers (Snopes, AFP Factuel, Le Monde Vérifications). Que disent-ils de cette image ?',
-    'Le code reflète le statut de l\'information.'
+    'Cherchez des factcheckers (Snopes, AFP Factuel, Le Monde Vérifications). Que disent-ils de cette image ?'
   ],
-  3: [
-    'Comptez les comptes qui répètent exactement le même message.',
-    'Quel mot revient dans TOUS les messages des bots ?',
-    'Le code est : BOT - nombre de bots - le mot répété en majuscules.'
-  ],
+  3: [],
   4: [
-    'Il s\'agit d\'un de ses amis.',
-    'Il est membre de la team crouton.',
-    'Il a rencontré la sirène, Andrea, lors d\'un voyage au Mexique.'
+    'Fais attention aux détails.',
+    'Regarde ce qui paraît inhabituel pour un portrait sportif officiel.',
+    'Compare les 4 photos côte à côte et cherche la seule incohérence visuelle évidente.'
   ],
   5: [
     'Soyez attentif aux pop-ups et cliquez sur le bon bouton (croix ou refuser par exemple).'
   ],
   6: [
-    'Vérifiez le nom des sites : un d\'entre eux est connu pour être satirique.',
-    'Le Gorafi et Nordpresse sont des sites de satire, pas d\'information.',
-    'Les articles A et C sont satiriques. Le code est SATIRE suivi des lettres.'
-  ]
+    'Regarde attentivement l\'expéditeur et le domaine du mail.',
+    'Vérifie le lien de vérification et l\'adresse indiquée en bas du message.',
+    'Repère tous les passages suspects puis termine l\'analyse dans la boîte mail.'
+  ],
+  8: [
+    'Photo 1 : Observez attentivement le mobilier - la chaise est-elle réaliste ? Comparez avec des vraies photos de camping-cars.',
+    'Photo 2 : L\'eau naturelle a toujours des reflets et une texture. Est-ce le cas ici ? Cherchez aussi des textes/motifs anormaux.',
+    'Photo 3 et 4 : Vérifiez les détails mécaniques (logos) et comptez les doigts. Les IA génèrent souvent ces éléments mal.'
+  ],
+  10: []
 };
 
 // ==========================================
@@ -1387,6 +2605,12 @@ function setAgentName() {
     return;
   }
   agentName = name.toUpperCase();
+  try {
+    sessionStorage.setItem('escapeAgentName', agentName);
+    localStorage.setItem('escapeAgentName', agentName);
+  } catch (e) {
+    // Ignore storage errors.
+  }
 
   var display = document.getElementById('agent-display');
   display.textContent = '[ Agent : ' + agentName + ' ]';
@@ -1421,6 +2645,12 @@ document.addEventListener('keydown', function(e) {
     }
     if (currentEnigme === 6 && !document.getElementById('enigme-6').classList.contains('hidden')) {
       checkEnigme6();
+    }
+    if (currentEnigme === 9 && !document.getElementById('enigme-9').classList.contains('hidden')) {
+      checkEnigme9();
+    }
+    if (currentEnigme === 10 && !document.getElementById('enigme-10').classList.contains('hidden')) {
+      checkEnigme10();
     }
   }
 });
@@ -1577,11 +2807,11 @@ function updateProgress(step) {
   section.classList.remove('hidden');
 
   var fill = document.getElementById('progress-fill');
-  fill.style.width = (step / 6 * 100) + '%';
+  fill.style.width = (step / 10 * 100) + '%';
 
-  document.getElementById('progress-text').textContent = step + ' / 6';
+  document.getElementById('progress-text').textContent = step + ' / 10';
 
-  for (var i = 1; i <= 6; i++) {
+  for (var i = 1; i <= 10; i++) {
     var dot = document.getElementById('dot-' + i);
     dot.className = 'progress-dot';
     if (i <= step) dot.classList.add('done');
@@ -1598,9 +2828,33 @@ function startEnigme(n) {
   if (n === 1) fromId = 'step-intro';
   else if (n === 2) fromId = 'success-1';
   else if (n === 3) fromId = 'success-2';
-  else if (n === 4) fromId = 'success-3';
+  else if (n === 4) {
+    fromId = 'success-3';
+    setTimeout(function() {
+      initEnigme4();
+    }, 100);
+  }
   else if (n === 5) fromId = 'success-4';
   else if (n === 6) fromId = 'success-5';
+  else if (n === 7) fromId = 'success-6';
+  else if (n === 8) {
+    fromId = 'success-7';
+    setTimeout(function() {
+      currentPhoto_E8 = 0;
+      photosCompleted_E8 = 0;
+      loadPhotoE8(0);
+      updateProgressBarE8();
+    }, 100);
+  }
+  else if (n === 9) {
+    fromId = 'success-8';
+  }
+  else if (n === 10) {
+    fromId = 'success-9';
+    setTimeout(function() {
+      initEnigme10();
+    }, 100);
+  }
 
   if (n === 1) updateProgress(0);
 
@@ -1721,11 +2975,188 @@ function checkEnigme3() {
 // ==========================================
 // ENIGME 4 : PROFIL SUSPECT
 // ==========================================
+var ENIGME4_ROUNDS = [
+  {
+    name: 'Série Mbappé',
+    fakeIndex: 4,
+    hintWrong: 'Ce n\'est pas la fausse image. Regarde les détails capillaires et textures.',
+    successText: 'Exact. La fausse image de la série Mbappé est la n°4.',
+    images: [
+      { src: 'img_enigme4/kylian1.jpg', alt: 'Photo 1 de Mbappé' },
+      { src: 'img_enigme4/kylian2.jpg', alt: 'Photo 2 de Mbappé' },
+      { src: 'img_enigme4/kylian3.webp', alt: 'Photo 3 de Mbappé' },
+      { src: 'img_enigme4/fake.jpg', alt: 'Photo 4 de Mbappé aux cheveux roses', fake: true }
+    ]
+  },
+  {
+    name: 'Série Tom',
+    fakeIndex: 1,
+    hintWrong: 'Ce n\'est pas la fausse image. Recompare les visages, contours et cohérence globale.',
+    successText: 'Exact. La fausse image de la série Tom est la n°1.',
+    images: [
+      { src: 'img_enigme4/fake_2.png', alt: 'Photo 1 de Tom', fake: true },
+      { src: 'img_enigme4/tom1.webp', alt: 'Photo 1 de Tom' },
+      { src: 'img_enigme4/tom2.webp', alt: 'Photo 2 de Tom' },
+      { src: 'img_enigme4/tom3.jpg', alt: 'Photo 3 de Tom' }
+    ]
+  }
+];
+
+var currentRound4 = 0;
+var attemptsLeft4 = 3;
+var wrongChoices4 = [];
+var solvedRound4 = false;
+var roundsCompleted4 = 0;
+
+function initEnigme4() {
+  currentRound4 = 0;
+  roundsCompleted4 = 0;
+  document.getElementById('code-4').value = '';
+  document.getElementById('card-code-4').style.display = 'none';
+  document.getElementById('code-4-reveal').className = 'code-reveal-small';
+  document.getElementById('result-4').textContent = '';
+  document.getElementById('result-4').className = 'result-msg';
+  document.getElementById('feedback-4-correct').className = 'feedback-box';
+  document.getElementById('feedback-4-wrong').className = 'feedback-box error';
+  loadRound4(0);
+  updateProgressBar4();
+}
+
+function loadRound4(index) {
+  currentRound4 = index;
+  attemptsLeft4 = 3;
+  wrongChoices4 = [];
+  solvedRound4 = false;
+
+  var round = ENIGME4_ROUNDS[index];
+  document.getElementById('round-num-4').textContent = (index + 1);
+  document.getElementById('round-label-4').textContent = round.name + ' — cliquez sur l\'image fausse';
+  document.getElementById('feedback-4-correct-text').textContent = round.successText;
+  document.getElementById('feedback-4-wrong-text').textContent = 'Cette image semble authentique. Recomparez les détails.';
+  document.getElementById('feedback-4-correct').className = 'feedback-box';
+  document.getElementById('feedback-4-wrong').className = 'feedback-box error';
+  document.getElementById('btn-retry-4').className = 'btn btn-secondary retry-e4';
+
+  var nextBtn = document.getElementById('btn-next-round-4');
+  nextBtn.style.display = index === ENIGME4_ROUNDS.length - 1 ? 'none' : 'inline-block';
+
+  var grid = document.getElementById('image-grid-4');
+  grid.innerHTML = '';
+  round.images.forEach(function(imgData, i) {
+    var btn = document.createElement('button');
+    btn.className = 'image-choice';
+    btn.id = 'choice-4-' + (i + 1);
+    btn.onclick = function() { selectChoice4(i + 1); };
+
+    var img = document.createElement('img');
+    img.src = imgData.src;
+    img.alt = imgData.alt;
+    if (index === 1) img.classList.add('round2-photo');
+    if (imgData.fake) img.classList.add('fake-photo');
+
+    btn.appendChild(img);
+    grid.appendChild(btn);
+  });
+
+  updateAttempts4();
+}
+
+function updateProgressBar4() {
+  var pct = (roundsCompleted4 / ENIGME4_ROUNDS.length * 100);
+  document.getElementById('phase-fill-4').style.width = pct + '%';
+  document.getElementById('phase-txt-4').textContent = roundsCompleted4 + ' / ' + ENIGME4_ROUNDS.length;
+
+  for (var i = 0; i < ENIGME4_ROUNDS.length; i++) {
+    var dot = document.getElementById('pdot-4-' + (i + 1));
+    dot.className = 'pdot';
+    if (i < roundsCompleted4) dot.classList.add('done');
+    else if (i === roundsCompleted4) dot.classList.add('active');
+  }
+}
+
+function updateAttempts4() {
+  for (var i = 1; i <= 3; i++) {
+    var dot = document.getElementById('att-4-' + i);
+    if (!dot) continue;
+    dot.classList.remove('used');
+    if (i > attemptsLeft4) dot.classList.add('used');
+  }
+}
+
+function selectChoice4(n) {
+  if (solvedRound4 || attemptsLeft4 <= 0) return;
+  if (wrongChoices4.indexOf(n) !== -1) return;
+
+  var round = ENIGME4_ROUNDS[currentRound4];
+  var btn = document.getElementById('choice-4-' + n);
+  var fbOk = document.getElementById('feedback-4-correct');
+  var fbBad = document.getElementById('feedback-4-wrong');
+  var badText = document.getElementById('feedback-4-wrong-text');
+  var retryBtn = document.getElementById('btn-retry-4');
+
+  if (n === round.fakeIndex) {
+    solvedRound4 = true;
+    btn.classList.add('correct');
+
+    for (var i = 1; i <= 4; i++) {
+      var b = document.getElementById('choice-4-' + i);
+      b.disabled = true;
+      if (i !== round.fakeIndex) b.classList.add('revealed');
+    }
+
+    fbBad.className = 'feedback-box error';
+    retryBtn.className = 'btn btn-secondary retry-e4';
+    fbOk.className = 'feedback-box success show';
+
+    roundsCompleted4++;
+    updateProgressBar4();
+
+    if (roundsCompleted4 >= ENIGME4_ROUNDS.length) {
+      document.getElementById('btn-next-round-4').style.display = 'none';
+      document.getElementById('code-4-reveal').className = 'code-reveal-small show';
+      document.getElementById('card-code-4').style.display = 'block';
+      document.getElementById('code-4').focus();
+    }
+  } else {
+    wrongChoices4.push(n);
+    attemptsLeft4--;
+    updateAttempts4();
+
+    btn.classList.add('wrong');
+    btn.disabled = true;
+
+    fbOk.className = 'feedback-box';
+    fbBad.className = 'feedback-box error show';
+
+    if (attemptsLeft4 <= 0) {
+      for (var j = 1; j <= 4; j++) {
+        document.getElementById('choice-4-' + j).disabled = true;
+      }
+      badText.textContent = 'Plus de tentatives. La bonne image est révélée.';
+      document.getElementById('choice-4-' + round.fakeIndex).classList.add('correct');
+      retryBtn.className = 'btn btn-secondary retry-e4 show';
+    } else {
+      badText.textContent = round.hintWrong;
+      retryBtn.className = 'btn btn-secondary retry-e4';
+    }
+  }
+}
+
+function resetRound4() {
+  loadRound4(currentRound4);
+}
+
+function nextRound4() {
+  if (!solvedRound4) return;
+  if (currentRound4 >= ENIGME4_ROUNDS.length - 1) return;
+  loadRound4(currentRound4 + 1);
+}
+
 function checkEnigme4() {
   var code = document.getElementById('code-4').value.trim().toUpperCase();
   var result = document.getElementById('result-4');
 
-  if (code === 'INOXTAG' || code === 'ADMINBYPASS') {
+  if (code === 'DETAILS' || code === 'ADMINBYPASS') {
     triggerSuccessEffect(4);
     setTimeout(function() {
       updateProgress(4);
@@ -1733,7 +3164,7 @@ function checkEnigme4() {
     }, 2200);
   } else {
     result.className = 'result-msg error';
-    result.textContent = '> ERREUR : Code invalide. Examinez bien chaque profil.';
+    result.textContent = '> ERREUR : Code invalide. Terminez les deux manches pour obtenir le bon code.';
     var input = document.getElementById('code-4');
     input.style.animation = 'none'; input.offsetHeight;
     input.style.animation = 'shake 0.4s ease';
@@ -1763,13 +3194,13 @@ function checkEnigme5() {
 }
 
 // ==========================================
-// ENIGME 6 : SATIRE
+// ENIGME 6 : PHISHING
 // ==========================================
 function checkEnigme6() {
   var code = document.getElementById('code-6').value.trim().toUpperCase();
   var result = document.getElementById('result-6');
 
-  if (code === 'SATIRE-AC' || code === 'ADMINBYPASS') {
+  if (code === 'PHISH' || code === 'ADMINBYPASS') {
     triggerSuccessEffect(6);
     setTimeout(function() {
       updateProgress(6);
@@ -1777,11 +3208,25 @@ function checkEnigme6() {
     }, 2200);
   } else {
     result.className = 'result-msg error';
-    result.textContent = '> ERREUR : Code invalide. Vérifiez bien les sources des articles.';
+    result.textContent = '> ERREUR : Code invalide. Terminez l\'énigme phishing pour obtenir le bon code.';
     var input = document.getElementById('code-6');
     input.style.animation = 'none'; input.offsetHeight;
     input.style.animation = 'shake 0.4s ease';
   }
+}
+
+function openPhishingEnigme() {
+  var name = (agentName || '').trim();
+  if (!name) {
+    try {
+      name = sessionStorage.getItem('escapeAgentName') || localStorage.getItem('escapeAgentName') || '';
+    } catch (e) {
+      name = '';
+    }
+  }
+  var url = 'enigme_phishing_v2.html';
+  if (name) url += '?agent=' + encodeURIComponent(name);
+  window.open(url, '_blank');
 }
 
 // ==========================================
@@ -1790,8 +3235,14 @@ function checkEnigme6() {
 function showFinal() {
   document.getElementById('final-agent-name').textContent = agentName;
   triggerGlitch();
+  var sourceId = 'success-6';
+  if (!document.getElementById('success-6').classList.contains('hidden')) {
+    sourceId = 'success-6';
+  } else if (!document.getElementById('success-10').classList.contains('hidden')) {
+    sourceId = 'success-10';
+  }
   setTimeout(function() {
-    transitionTo('success-6', 'final-screen');
+    transitionTo(sourceId, 'final-screen');
   }, 800);
 }
 
@@ -1897,6 +3348,739 @@ function showFinal() {
   }
   scheduleSpawn();
 })();
+
+// ==========================================
+// ENIGMA 7 FUNCTIONS
+// ==========================================
+var hints7 = [
+  'Cherchez sur Google : "cheval piscine pompiers Aube 2024". Des articles de presse régionale mentionnent cette intervention.',
+  'Le cheval s\'appelle Nipper. La commune se trouve dans le département de l\'Aube (10). Cherchez "Nipper cheval piscine pompiers".',
+  'L\'événement date du 5 décembre 2024. Cherchez des articles de France Bleu Champagne-Ardenne ou L\'Est Éclair pour confirmer les détails exacts.'
+];
+var hintsUsed7 = 0;
+var attemptsLeft7 = 3;
+var wrongChoices7 = [];
+var solved7 = false;
+
+function updateAttempts7() {
+  for (var i = 1; i <= 3; i++) {
+    var dot = document.getElementById('att-7-' + i);
+    dot.className = 'attempt-dot';
+    if (i <= (3 - attemptsLeft7)) dot.classList.add('used');
+    if (i > (3 - attemptsLeft7) && i > attemptsLeft7) dot.classList.add('empty');
+  }
+}
+updateAttempts7();
+
+function selectChoice7(n) {
+  if (solved7) return;
+  if (attemptsLeft7 <= 0) return;
+  if (wrongChoices7.indexOf(n) !== -1) return;
+
+  var btn = document.getElementById('choice-7-' + n);
+
+  if (n === 1) {
+    // CORRECT
+    solved7 = true;
+    btn.classList.add('correct');
+    btn.disabled = true;
+
+    // Disable others
+    for (var i = 1; i <= 3; i++) {
+      if (i !== 1) {
+        document.getElementById('choice-7-' + i).disabled = true;
+        document.getElementById('choice-7-' + i).classList.add('revealed');
+      }
+    }
+
+    // Flash
+    var flash = document.createElement('div');
+    flash.className = 'success-overlay';
+    document.body.appendChild(flash);
+    setTimeout(function() { flash.remove(); }, 1400);
+
+    // Show correct feedback
+    document.getElementById('feedback-7-wrong').className = 'feedback-box error';
+    document.getElementById('feedback-7-correct').className = 'feedback-box success show';
+    document.getElementById('source-7-box').className = 'source-box show';
+
+    // Do not show code yet, wait for input
+
+    // Sound
+    playSuccess();
+
+  } else {
+    // WRONG
+    wrongChoices7.push(n);
+    attemptsLeft7--;
+    updateAttempts7();
+
+    btn.classList.add('wrong');
+    btn.disabled = true;
+
+    // Shake
+    btn.style.animation = 'none';
+    btn.offsetHeight;
+    btn.style.animation = 'shake 0.4s ease';
+
+    // Show wrong feedback
+    var wrongMsg = '';
+    if (n === 2) wrongMsg = 'Cette légende est inventée : aucun tournage de film n\'a eu lieu ici. Les pompiers interviennent pour de vraies urgences, pas pour des cascades cinématographiques. Cherchez les faits réels !';
+    if (n === 3) wrongMsg = 'Cette légende est inventée : l\'événement ne s\'est pas passé l\'été, et ce n\'est pas une histoire d\'aquaponey. Regardez plus précisément la date et les circonstances réelles.';
+
+    document.getElementById('feedback-7-wrong-text').textContent = wrongMsg;
+    document.getElementById('feedback-7-wrong').className = 'feedback-box error show';
+    document.getElementById('feedback-7-correct').className = 'feedback-box success';
+
+    if (attemptsLeft7 === 0) {
+      // Reveal correct
+      setTimeout(function() {
+        document.getElementById('choice-7-1').classList.add('correct');
+        document.getElementById('choice-7-1').disabled = true;
+        document.getElementById('feedback-7-correct').className = 'feedback-box success show';
+        document.getElementById('source-7-box').className = 'source-box show';
+      }, 800);
+    }
+
+    // Error sound
+    playError();
+  }
+}
+
+function getHint7() {
+  if (hintsUsed7 >= 3) return;
+  var dot = document.getElementById('hint-dot-7-' + (hintsUsed7 + 1));
+  dot.classList.add('used');
+  var textEl = document.getElementById('hint-text-7');
+  textEl.textContent = hints7[hintsUsed7];
+  textEl.classList.add('visible');
+  hintsUsed7++;
+}
+
+function previousHint7() {
+  if (hintsUsed7 <= 0) return;
+  hintsUsed7--;
+  var dot = document.getElementById('hint-dot-7-' + (hintsUsed7 + 1));
+  dot.classList.remove('used');
+  var textEl = document.getElementById('hint-text-7');
+  if (hintsUsed7 === 0) {
+    textEl.classList.remove('visible');
+    textEl.textContent = '';
+  } else {
+    textEl.textContent = hints7[hintsUsed7 - 1];
+  }
+}
+
+function checkEnigme7() {
+  var code = document.getElementById('code-7').value.trim().toUpperCase();
+  var resultEl = document.getElementById('result-7');
+  if (code === 'NIPPER' || code === 'ADMINBYPASS') {
+    resultEl.textContent = '✅ Code valide !';
+    resultEl.style.color = '#00ff41';
+    triggerSuccessEffect(7);
+    setTimeout(function() {
+      updateProgress(7);
+      transitionTo('enigme-7', 'success-7');
+    }, 2200);
+  } else {
+    resultEl.textContent = '❌ Code incorrect. Réessayez.';
+    resultEl.style.color = '#ff4444';
+  }
+}
+
+// ============================================================
+// ENIGME 8 - CONFIGURATION DES PHOTOS
+// ============================================================
+var PHOTOS_ENIGME8 = [
+  {
+    image: "photo/camping car.png",
+    desc: "Photo 1 : Intérieur d'un camping-car avec son aménagement",
+    label: "📷 Photo interceptée — Camping-car, aménagement intérieur",
+    attempts: 3,
+    props: [
+      { text: "La chaise visible n'existe pas ou est disproportionnée.", correct: true },
+      { text: "Le sable n'est pas réaliste", correct: false },
+      { text: "L'aménagement du van est orienté dans le mauvais sens.", correct: true },
+      { text: "Les couleurs de l'intérieur sont saturées de manière anormale.", correct: false },
+      { text: "Les sommets des montagnes ont généralement une forme similaire.", correct: true },
+  
+    ],
+    explanation: "Cette image montrait plusieurs incohérences : une chaise anormale, un aménagement du van est mal orienté ansi que des montagnes avec des pics trop similaires."
+  },
+  {
+    image: "photo/riviere.png",
+    desc: "Photo 2 : Paysage de rivière avec eau",
+    label: "📷 Image interceptée — Paysage naturel avec rivière",
+    attempts: 3,
+    props: [
+      { text: "L'eau de la rivière n'a pas une forme ou une texture réaliste (reflets bizarres, surface anormale).", correct: true },
+      { text: "Les arbres en arrière-plan ont des feuillages trop uniformes.", correct: false },
+      { text: "Le ciel a une couleur impossible pour une photo naturelle.", correct: false },
+      { text: "Les écritures sur la pagaie sont illisibles.", correct: true },
+      { text: "La taille du kayak est excessive.", correct: false },
+    ],
+    explanation: "Cette image présente des erreurs classiques de génération IA : l'eau n'a pas de reflets ou textures réalistes, et les écritures sont impossble à lire. Les IA ont du mal à générer des surfaces d'eau crédibles et du texte lisible sur les objets."
+  },
+  {
+    image: "photo/voiture.png",
+    desc: "Photo 3 : Collection de voitures",
+    label: "📷 Image interceptée — Voitures, stationnement",
+    attempts: 3,
+    props: [
+      { text: "Les voiture n'ont pas de logo ou de marque visible sur la calandre.", correct: true },
+      { text: "Il existe une tache ou une anomalie sur la voiture visible au premier plan.", correct: true },
+      { text: "Les plaques d'immatriculation sont mal rendues ou illisibles.", correct: false },
+      { text: "Les véhicules présentent une anomalie : l'avant est absent.", correct: true },
+      { text: "Les roues des voitures ne sont pas symétriques.", correct: false },
+    ],
+    explanation: "Cette image présentait des défauts typiques d'une génération IA : les logos des véhicules manquaient ou étaient mal generés, et une tache visible semblait anormale. De plus, l'avant de plusieurs voitures était totalement manquant."
+  },
+  {
+    image: "photo/6doigts.png",
+    desc: "Photo 4 : Portrait d'une personne",
+    label: "📷 Image interceptée — Portrait, gros plan",
+    attempts: 3,
+    props: [
+      { text: "La personne visible a 6 doigts au lieu de 5 sur une main.", correct: true },
+      { text: "Les proportions du visage semblent déformées ou asymétriques.", correct: false },
+      { text: "Les yeux ne sont pas alignés correctement.", correct: false },
+      { text: "L'arrière-plan est fortement flouté.", correct: true },
+      { text: "Les cheveux ont une structure impossible.", correct: false },
+    ],
+    explanation: "Cette image présentait l'erreur classique des deepfakes générés par IA : le nombre de doigts incorrect (6 au lieu de 5). Ainsi qu’un flou extrême au second plan de l’image. Les IA ont souvent du mal à générer des mains réalistes, et peuvent aussi produire des arrière-plans flous ou incohérents."
+  }
+];
+
+
+var currentPhoto_E8 = 0;
+var attemptsLeft_E8 = 3;
+var selectedProps_E8 = [];
+var photosCompleted_E8 = 0;
+
+function loadPhotoE8(index) {
+  var p = PHOTOS_ENIGME8[index];
+  attemptsLeft_E8 = p.attempts;
+  selectedProps_E8 = [];
+
+  document.getElementById('card-title-num').textContent = (index+1);
+
+  var zone = document.getElementById('photo-zone');
+  var ph = document.getElementById('photo-placeholder');
+  var existingImg = zone.querySelector('img');
+  if (existingImg) existingImg.remove();
+
+  if (p.image) {
+    var img = document.createElement('img');
+    img.src = p.image;
+    img.alt = p.desc;
+    img.onerror = function() {
+      img.style.display = 'none';
+      ph.style.display = 'flex';
+      document.getElementById('photo-desc').textContent = p.desc;
+    };
+    img.onload = function() {
+      ph.style.display = 'none';
+    };
+    ph.style.display = 'flex';
+    document.getElementById('photo-desc').textContent = p.desc;
+    zone.insertBefore(img, zone.querySelector('.photo-scan'));
+  } else {
+    ph.style.display = 'flex';
+    document.getElementById('photo-desc').textContent = p.desc;
+  }
+
+  document.getElementById('photo-label').textContent = p.label;
+  updateAttemptsE8();
+
+  var container = document.getElementById('props-container');
+  container.innerHTML = '';
+  p.props.forEach(function(prop, i) {
+    var btn = document.createElement('button');
+    btn.className = 'prop-btn';
+    btn.id = 'prop-' + i;
+    btn.onclick = function() { togglePropE8(i); };
+    btn.innerHTML =
+      '<div class="prop-check" id="pcheck-'+i+'"></div>' +
+      '<div class="pnum">' + (i+1) + '</div>' +
+      '<div class="prop-text">' + prop.text + '</div>';
+    container.appendChild(btn);
+  });
+
+  document.getElementById('fb-ok').className = 'feedback-box ok';
+  document.getElementById('fb-bad').className = 'feedback-box bad';
+  document.getElementById('code-final').className = 'code-reveal-final';
+  document.getElementById('btn-validate').disabled = false;
+  document.getElementById('btn-validate').style.display = 'inline-block';
+}
+
+function updateProgressBarE8() {
+  var pct = (photosCompleted_E8 / PHOTOS_ENIGME8.length * 100);
+  document.getElementById('phase-fill').style.width = pct + '%';
+  document.getElementById('phase-txt').textContent = photosCompleted_E8 + ' / ' + PHOTOS_ENIGME8.length;
+  for (var i = 0; i < PHOTOS_ENIGME8.length; i++) {
+    var dot = document.getElementById('pdot-' + (i+1));
+    dot.className = 'pdot';
+    if (i < photosCompleted_E8) dot.classList.add('done');
+    else if (i === photosCompleted_E8) dot.classList.add('active');
+  }
+}
+
+function updateAttemptsE8() {
+  var p = PHOTOS_ENIGME8[currentPhoto_E8];
+  var used = p.attempts - attemptsLeft_E8;
+  for (var i = 1; i <= p.attempts && i <= 3; i++) {
+    var dot = document.getElementById('a'+i);
+    if (!dot) continue;
+    dot.className = 'adot';
+    if (i <= used) dot.classList.add('used');
+  }
+  for (var i = p.attempts + 1; i <= 3; i++) {
+    var dot = document.getElementById('a'+i);
+    if (dot) dot.style.visibility = 'hidden';
+  }
+  for (var i = 1; i <= p.attempts; i++) {
+    var dot = document.getElementById('a'+i);
+    if (dot) dot.style.visibility = 'visible';
+  }
+}
+
+function togglePropE8(i) {
+  var idx = selectedProps_E8.indexOf(i);
+  var btn = document.getElementById('prop-' + i);
+  var check = document.getElementById('pcheck-' + i);
+  if (idx === -1) {
+    selectedProps_E8.push(i);
+    btn.classList.add('selected');
+    check.textContent = '✓';
+  } else {
+    selectedProps_E8.splice(idx, 1);
+    btn.classList.remove('selected');
+    check.textContent = '';
+  }
+}
+
+function validateAnswerE8() {
+  var p = PHOTOS_ENIGME8[currentPhoto_E8];
+  var correctAnswers = [];
+  p.props.forEach(function(prop, i) {
+    if (prop.correct) correctAnswers.push(i);
+  });
+
+  var hits = 0;
+  var wrong = 0;
+  selectedProps_E8.forEach(function(i) {
+    if (p.props[i].correct) hits++;
+    else wrong++;
+  });
+
+  var missed = correctAnswers.length - hits;
+  var isSuccess = (wrong === 0 && missed === 0);
+
+  if (isSuccess) {
+    showSuccessE8(hits, correctAnswers.length);
+  } else {
+    attemptsLeft_E8--;
+    updateAttemptsE8();
+
+    var card = document.getElementById('enigme-8');
+    card.style.animation = 'none'; card.offsetHeight;
+    card.style.animation = 'shake .4s ease';
+
+    if (attemptsLeft_E8 <= 0) {
+      revealAnswersE8();
+      showForceSuccessE8();
+    } else {
+      var msgs = [];
+      if (wrong > 0) msgs.push(wrong + ' proposition' + (wrong>1?'s':'') + ' cochée' + (wrong>1?'s':'') + ' incorrecte' + (wrong>1?'s':''));
+      if (missed > 0) msgs.push(missed + ' vraie' + (missed>1?'s':'') + ' erreur' + (missed>1?'s':'') + ' manquée' + (missed>1?'s':''));
+
+      var fbBad = document.getElementById('fb-bad');
+      document.getElementById('fb-bad-body').textContent = msgs.join(' • ') + '. Cherchez mieux…';
+      fbBad.className = 'feedback-box bad show';
+      document.getElementById('fb-ok').className = 'feedback-box ok';
+
+      playErrorE8();
+    }
+  }
+}
+
+function showSuccessE8(hits, total) {
+  var p = PHOTOS_ENIGME8[currentPhoto_E8];
+  p.props.forEach(function(prop, i) {
+    var btn = document.getElementById('prop-' + i);
+    var check = document.getElementById('pcheck-' + i);
+    btn.disabled = true;
+    btn.classList.remove('selected');
+    if (prop.correct) {
+      btn.classList.add('correct');
+      check.textContent = '✓';
+    }
+  });
+
+  document.getElementById('btn-validate').disabled = true;
+
+  var fbOk = document.getElementById('fb-ok');
+  document.getElementById('fb-ok-title').textContent = '✅ ANALYSE CORRECTE — ' + hits + '/' + total + ' erreurs identifiées';
+  document.getElementById('fb-ok-body').textContent = p.explanation;
+  document.getElementById('fb-score').textContent = '→ Tentatives utilisées : ' + (p.attempts - attemptsLeft_E8) + '/' + p.attempts;
+  fbOk.className = 'feedback-box ok show';
+  document.getElementById('fb-bad').className = 'feedback-box bad';
+
+  var flash = document.createElement('div');
+  flash.className = 'success-overlay';
+  document.body.appendChild(flash);
+  setTimeout(function() { flash.remove(); }, 1400);
+
+  photosCompleted_E8++;
+  updateProgressBarE8();
+
+  if (photosCompleted_E8 >= PHOTOS_ENIGME8.length) {
+    document.getElementById('btn-next-photo').style.display = 'none';
+    setTimeout(function() {
+      document.getElementById('code-final').className = 'code-reveal-final show';
+      document.getElementById('card-code').style.display = 'block';
+    }, 800);
+  } else {
+    document.getElementById('btn-next-photo').textContent = '';
+    document.getElementById('btn-next-photo').innerHTML = '<span>Photo suivante ➡</span>';
+    document.getElementById('btn-next-photo').style.display = 'inline-block';
+  }
+
+  playSuccessE8();
+}
+
+function revealAnswersE8() {
+  var p = PHOTOS_ENIGME8[currentPhoto_E8];
+  p.props.forEach(function(prop, i) {
+    var btn = document.getElementById('prop-' + i);
+    var check = document.getElementById('pcheck-' + i);
+    btn.disabled = true;
+    btn.classList.remove('selected');
+    if (prop.correct) {
+      btn.classList.add('missed');
+      check.textContent = '!';
+    } else {
+      btn.classList.add('wrong');
+      check.textContent = '✕';
+    }
+  });
+  document.getElementById('btn-validate').disabled = true;
+}
+
+function showForceSuccessE8() {
+  var p = PHOTOS_ENIGME8[currentPhoto_E8];
+  var fbBad = document.getElementById('fb-bad');
+  document.getElementById('fb-bad-body').innerHTML =
+    'Plus de tentatives. Les erreurs sont affichées en <span style="color:#ffaa00">orange</span>.<br>' +
+    '<em style="color:#888;font-size:.9em;">' + p.explanation + '</em>';
+  fbBad.className = 'feedback-box bad show';
+
+  photosCompleted_E8++;
+  updateProgressBarE8();
+
+  if (photosCompleted_E8 >= PHOTOS_ENIGME8.length) {
+    setTimeout(function() {
+      document.getElementById('code-final').className = 'code-reveal-final show';
+      document.getElementById('card-code').style.display = 'block';
+    }, 800);
+  } else {
+    document.getElementById('fb-bad').innerHTML +=
+      '<button class="btn-next-photo" onclick="nextPhotoE8()" style="margin-top:14px;"><span>Photo suivante ➡</span></button>';
+  }
+}
+
+function nextPhotoE8() {
+  currentPhoto_E8++;
+  if (currentPhoto_E8 < PHOTOS_ENIGME8.length) {
+    document.getElementById('enigme-8').style.animation = 'none';
+    document.getElementById('enigme-8').offsetHeight;
+    document.getElementById('enigme-8').style.animation = 'fadein .5s ease-out';
+    loadPhotoE8(currentPhoto_E8);
+  }
+}
+
+function checkCodeE8() {
+  var code = document.getElementById('code-input').value.trim().toUpperCase();
+  var result = document.getElementById('result-final');
+  if (code === 'DEEPFAKE' || code === 'ADMINBYPASS') {
+    result.className = 'result-msg success-msg typing-result';
+    result.textContent = '';
+    var msg = '> ACCÈS AUTORISÉ — Code validé !';
+    var ci = 0;
+    function typeResult() {
+      if (ci < msg.length) {
+        result.textContent += msg[ci];
+        ci++;
+        setTimeout(typeResult, 30);
+      } else {
+        result.style.borderRight = 'none';
+      }
+    }
+    typeResult();
+
+    setTimeout(function() {
+      updateProgress(8);
+      transitionTo('enigme-8', 'success-8');
+    }, 1500);
+  } else {
+    result.className = 'result-msg err';
+    result.textContent = '> ERREUR : Code invalide. Reprenez l\'analyse.';
+    var inp = document.getElementById('code-input');
+    inp.style.animation = 'none'; inp.offsetHeight;
+    inp.style.animation = 'shake .4s ease';
+    playErrorE8();
+  }
+}
+
+function playSuccessE8() {
+  try {
+    var ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [880, 1320].forEach(function(freq, i) {
+      setTimeout(function() {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = freq; o.type = 'sine';
+        g.gain.setValueAtTime(.15, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(.01, ctx.currentTime + .5);
+        o.start(ctx.currentTime); o.stop(ctx.currentTime + .5);
+      }, i * 200);
+    });
+  } catch(e) {}
+}
+
+function playErrorE8() {
+  try {
+    var ctx = new (window.AudioContext||window.webkitAudioContext)();
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 220; o.type = 'sawtooth';
+    g.gain.setValueAtTime(.1, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.01, ctx.currentTime + .3);
+    o.start(ctx.currentTime); o.stop(ctx.currentTime + .3);
+  } catch(e) {}
+}
+
+function checkEnigme9() {
+  var code = document.getElementById('code-9').value.trim().toUpperCase();
+  var result = document.getElementById('result-9');
+  if (code === 'AXES' || code === 'ADMINBYPASS') {
+    triggerSuccessEffect(9);
+    setTimeout(function() {
+      updateProgress(9);
+      transitionTo('enigme-9', 'success-9');
+    }, 2200);
+  } else {
+    result.className = 'result-msg error';
+    result.textContent = '> ERREUR : Code invalide.';
+    var input = document.getElementById('code-9');
+    input.style.animation = 'none'; input.offsetHeight;
+    input.style.animation = 'shake 0.4s ease';
+  }
+}
+
+// ==========================================
+// ENIGME 10 : ANIMAUX MARINS
+// ==========================================
+var ENIGME10_DATA = {
+  images: [
+    { src: 'photo/requin.png', title: 'Le Requin', alt: 'Requins marins', fake: true },
+    { src: 'photo/phoque.jpg', title: 'Le Phoque', alt: 'Phoques', fake: false },
+    { src: 'photo/orque.jpg', title: 'L\'Orque', alt: 'Orques', fake: false },
+    { src: 'photo/beluga.jpg', title: 'Le Beluga', alt: 'Belugas', fake: false }
+  ],
+  fakeIndex: 0,
+  successText: 'Exact ! L\'image du requin est modifiée ou fausse.',
+  hintWrong: 'Cette image semble authentique. Continuez à observer les autres.'
+};
+
+var attemptsLeft10 = 3;
+var wrongChoices10 = [];
+var solvedEnigma10 = false;
+
+function initEnigme10() {
+  solvedEnigma10 = false;
+  attemptsLeft10 = 3;
+  wrongChoices10 = [];
+  document.getElementById('code-10').value = '';
+  document.getElementById('card-code-10').style.display = 'none';
+  document.getElementById('code-10-reveal').className = 'code-reveal-small';
+  document.getElementById('result-10').textContent = '';
+  document.getElementById('feedback-10-correct').className = 'feedback-box success';
+  document.getElementById('feedback-10-wrong').className = 'feedback-box error';
+  
+  var grid = document.getElementById('animal-grid-10');
+  grid.innerHTML = '';
+  
+  ENIGME10_DATA.images.forEach(function(imgData, i) {
+    var btn = document.createElement('button');
+    btn.className = 'animal-card';
+    btn.id = 'choice-10-' + i;
+    btn.onclick = function() { selectAnimal10(i); };
+    
+    var img = document.createElement('img');
+    img.src = imgData.src;
+    img.alt = imgData.alt;
+    
+    var title = document.createElement('div');
+    title.className = 'animal-title';
+    title.textContent = imgData.title;
+    
+    btn.appendChild(img);
+    btn.appendChild(title);
+    grid.appendChild(btn);
+  });
+  
+  updateAttempts10();
+}
+
+function updateAttempts10() {
+  for (var i = 1; i <= 3; i++) {
+    var dot = document.getElementById('att-10-' + i);
+    if (!dot) continue;
+    dot.classList.remove('used');
+    if (i > attemptsLeft10) dot.classList.add('used');
+  }
+}
+
+function selectAnimal10(index) {
+  if (solvedEnigma10 || attemptsLeft10 <= 0) return;
+  if (wrongChoices10.indexOf(index) !== -1) return;
+
+  var btn = document.getElementById('choice-10-' + index);
+  var fbOk = document.getElementById('feedback-10-correct');
+  var fbBad = document.getElementById('feedback-10-wrong');
+  var badText = document.getElementById('feedback-10-wrong-text');
+
+  if (index === ENIGME10_DATA.fakeIndex) {
+    // CORRECT
+    solvedEnigma10 = true;
+    btn.classList.add('correct');
+
+    for (var i = 0; i < 4; i++) {
+      var b = document.getElementById('choice-10-' + i);
+      b.disabled = true;
+      if (i !== ENIGME10_DATA.fakeIndex) b.classList.add('revealed');
+    }
+
+    fbBad.className = 'feedback-box error';
+    fbOk.className = 'feedback-box success show';
+    document.getElementById('feedback-10-correct-text').textContent = ENIGME10_DATA.successText;
+
+    document.getElementById('code-10-reveal').className = 'code-reveal-small show';
+    document.getElementById('card-code-10').style.display = 'block';
+    document.getElementById('code-10').focus();
+  } else {
+    // WRONG
+    wrongChoices10.push(index);
+    attemptsLeft10--;
+    updateAttempts10();
+
+    btn.classList.add('wrong');
+    btn.disabled = true;
+
+    fbOk.className = 'feedback-box success';
+    fbBad.className = 'feedback-box error show';
+    badText.textContent = ENIGME10_DATA.hintWrong;
+
+    if (attemptsLeft10 <= 0) {
+      for (var j = 0; j < 4; j++) {
+        document.getElementById('choice-10-' + j).disabled = true;
+      }
+      badText.textContent = 'Plus de tentatives. L\'animal faux est révélé.';
+      document.getElementById('choice-10-' + ENIGME10_DATA.fakeIndex).classList.add('correct');
+    }
+  }
+}
+
+function checkEnigme10() {
+  var code = document.getElementById('code-10').value.trim().toUpperCase();
+  var result = document.getElementById('result-10');
+
+  if (code === 'OCEAN' || code === 'ADMINBYPASS') {
+    triggerSuccessEffect(10);
+    setTimeout(function() {
+      updateProgress(10);
+      transitionTo('enigme-10', 'success-10');
+    }, 2200);
+  } else {
+    result.className = 'result-msg error';
+    result.textContent = '> ERREUR : Code invalide. Complétez d\'abord l\'énigme.';
+    var input = document.getElementById('code-10');
+    input.style.animation = 'none'; input.offsetHeight;
+    input.style.animation = 'shake 0.4s ease';
+  }
+}
+
+
+
+// Hint functions for 9-10 (placeholders)
+var hints9 = [
+  'Ouvre d\'abord enigme9.html dans un nouvel onglet depuis le bouton.',
+  'Dans l\'énigme externe, vérifie les axes et les échelles des graphiques avant de répondre.',
+  'Quand l\'analyse est terminée, un code final est affiché. Reviens le saisir ici.'
+];
+var hintsUsed9 = 0;
+function getHint9() {
+  if (hintsUsed9 >= 3) return;
+  var dot = document.getElementById('hint-dot-9-' + (hintsUsed9 + 1));
+  dot.classList.add('used');
+  var textEl = document.getElementById('hint-text-9');
+  textEl.textContent = hints9[hintsUsed9];
+  textEl.classList.add('visible');
+  hintsUsed9++;
+}
+function previousHint9() {
+  if (hintsUsed9 <= 0) return;
+  hintsUsed9--;
+  var dot = document.getElementById('hint-dot-9-' + (hintsUsed9 + 1));
+  dot.classList.remove('used');
+  var textEl = document.getElementById('hint-text-9');
+  if (hintsUsed9 === 0) {
+    textEl.classList.remove('visible');
+    textEl.textContent = '';
+  } else {
+    textEl.textContent = hints9[hintsUsed9 - 1];
+  }
+}
+
+var hints10 = ['Indice en développement.', 'Indice en développement.', 'Indice en développement.'];
+var hintsUsed10 = 0;
+function getHint10() {
+  if (hintsUsed10 >= 3) return;
+  var dot = document.getElementById('hint-dot-10-' + (hintsUsed10 + 1));
+  dot.classList.add('used');
+  var textEl = document.getElementById('hint-text-10');
+  textEl.textContent = hints10[hintsUsed10];
+  textEl.classList.add('visible');
+  hintsUsed10++;
+}
+function previousHint10() {
+  if (hintsUsed10 <= 0) return;
+  hintsUsed10--;
+  var dot = document.getElementById('hint-dot-10-' + (hintsUsed10 + 1));
+  dot.classList.remove('used');
+  var textEl = document.getElementById('hint-text-10');
+  if (hintsUsed10 === 0) {
+    textEl.classList.remove('visible');
+    textEl.textContent = '';
+  } else {
+    textEl.textContent = hints10[hintsUsed10 - 1];
+  }
+}
+
+// Keyboard support for Énigme 8 code input
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.getElementById('code-input') && document.getElementById('code-input').style.display !== 'none') {
+    var parent = document.getElementById('code-input').parentElement;
+    while (parent && parent.style && parent.style.display === 'none') {
+      return;
+    }
+    if (document.getElementById('card-code') && document.getElementById('card-code').style.display !== 'none') {
+      checkCodeE8();
+    }
+  }
+});
+
 </script>
 
 </body>

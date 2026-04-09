@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Énigme 9 - Le graphique menteur</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-0: #1f2128;
+        --bg-1: #282a33;
+        --bg-2: #333640;
+        --line: #3f4350;
+        --text: #d7dae2;
+        --muted: #8f95a5;
+        --neon: #00ff75;
+        --danger: #ff4d6d;
+        --warn: #ffb84d;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: "Rajdhani", sans-serif;
+        background:
+            radial-gradient(circle at 10% 20%, #2f3340 0%, transparent 35%),
+            radial-gradient(circle at 90% 80%, #2b3136 0%, transparent 30%),
+            linear-gradient(160deg, var(--bg-0), var(--bg-1));
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 255, 117, 0.02) 2px,
+            rgba(0, 255, 117, 0.02) 4px
+        );
+        z-index: 10;
+    }
+
+    .container {
+        width: min(1180px, 92vw);
+        margin: 0 auto;
+        padding: 26px 0 48px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: linear-gradient(180deg, #313644, #2a2d36);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        padding: 26px 24px;
+        margin-bottom: 18px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--neon), transparent);
+        animation: pulse-line 2.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse-line {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+    }
+
+    .badge {
+        display: inline-block;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.72rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--neon);
+        border: 1px solid #00ff7540;
+        background: #00ff7510;
+        border-radius: 999px;
+        padding: 5px 13px;
+        margin-bottom: 12px;
+    }
+
+    h1 {
+        font-family: "Orbitron", sans-serif;
+        letter-spacing: 2px;
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        margin-bottom: 10px;
+        color: #ffffff;
+        text-shadow: 0 0 24px rgba(0, 255, 117, 0.2);
+    }
+
+    .intro {
+        font-size: 1.08rem;
+        color: #b7bdcb;
+        line-height: 1.45;
+        max-width: 820px;
+    }
+
+    .mission-panel {
+        margin-top: 16px;
+        border: 1px solid #00ff7526;
+        background: linear-gradient(180deg, #1f2f2a, #24332f);
+        border-radius: 12px;
+        padding: 14px 16px;
+    }
+
+    .mission-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .code-display {
+        font-family: "Share Tech Mono", monospace;
+        letter-spacing: 4px;
+        font-size: 1rem;
+        color: #fff;
+    }
+
+    .progress {
+        height: 8px;
+        background: #2e3837;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #00ff75, #2dd4bf);
+        box-shadow: 0 0 16px rgba(0, 255, 117, 0.45);
+        transition: width 0.35s ease;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        max-width: 760px;
+        margin: 0 auto;
+    }
+
+    .card {
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, var(--bg-2), #2f323c);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        animation: rise 0.45s ease-out;
+    }
+
+    @keyframes rise {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card h2 {
+        font-size: 1.2rem;
+        margin-bottom: 6px;
+        color: #ffffff;
+    }
+
+    .subtitle {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+    }
+
+    .chart-canvas {
+        display: block;
+        width: 100%;
+        height: auto !important;
+        min-height: 360px;
+        max-height: 520px;
+        aspect-ratio: 4 / 3;
+        background: #252832;
+        border: 1px solid #3c404d;
+        border-radius: 10px;
+        padding: 0;
+        margin-bottom: 10px;
+    }
+
+    .question {
+        font-size: 1rem;
+        margin-bottom: 8px;
+        color: #e9edf7;
+    }
+
+    .options {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .options label {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        border: 1px solid #424856;
+        border-radius: 9px;
+        padding: 9px 10px;
+        background: #2b2f39;
+        transition: border-color 0.25s ease, background 0.25s ease;
+        cursor: pointer;
+    }
+
+    .options label:hover {
+        border-color: #00ff7542;
+        background: #2d3540;
+    }
+
+    input[type="radio"] {
+        accent-color: var(--neon);
+    }
+
+    button {
+        border: 1px solid #00ff754d;
+        background: linear-gradient(135deg, #2f4440, #2b3b37);
+        color: #f6fffb;
+        font-family: "Rajdhani", sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        border-radius: 10px;
+        padding: 9px 14px;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(0, 255, 117, 0.18);
+    }
+
+    .feedback {
+        min-height: 21px;
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
+    .feedback.ok { color: var(--neon); }
+    .feedback.ko { color: var(--danger); }
+    .feedback.warn { color: var(--warn); }
+
+    .result-card {
+        margin-top: 16px;
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, #343844, #2d303b);
+        border-radius: 16px;
+        padding: 22px;
+        display: none;
+    }
+
+    .result-card.show {
+        display: block;
+    }
+
+    .result-card h2 {
+        font-family: "Orbitron", sans-serif;
+        margin-bottom: 8px;
+    }
+
+    .final-code {
+        margin-top: 10px;
+        font-family: "Share Tech Mono", monospace;
+        letter-spacing: 6px;
+        font-size: 1.4rem;
+        color: var(--neon);
+        text-shadow: 0 0 20px rgba(0, 255, 117, 0.35);
+    }
+
+    @media (max-width: 940px) {
+        .chart-canvas {
+            min-height: 320px;
+            aspect-ratio: 1 / 1;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+<section class="hero">
+    <div class="badge">Dossier OMBRE-9 | Analyse médias</div>
+    <h1>Enquête : Le graphique menteur</h1>
+    <p class="intro">Un site d’actualité publie ces graphiques. Identifie les manipulations pour extraire les lettres du code final et déverrouiller l’accès.</p>
+    <div class="mission-panel">
+        <div class="mission-head">
+            <span>Progression d’analyse</span>
+            <span id="codeDisplay" class="code-display">_ _ _ _</span>
+        </div>
+        <div class="progress">
+            <div id="progressFill" class="progress-fill"></div>
+        </div>
+    </div>
+</section>
+
+<section class="grid">
+
+<!-- Graphique 1 -->
+<div class="card">
+<h2>Explosion des prix des abonnements</h2>
+<div class="subtitle">Source : Observatoire des télécoms (2023)</div>
+<canvas id="chart1" class="chart-canvas"></canvas>
+
+<p class="question">Quel est le problème ?</p>
+<div class="options">
+<label><input type="radio" name="q1" value="A"> Les données sont inventées</label><br>
+<label><input type="radio" name="q1" value="B"> L’axe ne commence pas à zéro</label><br>
+<label><input type="radio" name="q1" value="C"> Mauvaise unité</label><br>
+ </div>
+<button onclick="checkAnswer('q1')">Valider</button>
+<p id="feedback-q1" class="feedback"></p>
+</div>
+
+<!-- Graphique 2 -->
+<div class="card">
+<h2>Les réseaux sociaux boostent les résultats scolaires</h2>
+<div class="subtitle">Comparaison du temps passé et des notes moyennes</div>
+<canvas id="chart2" class="chart-canvas"></canvas>
+
+<p class="question">Pourquoi ce graphique est trompeur ?</p>
+<div class="options">
+<label><input type="radio" name="q2" value="A"> Trop de données</label><br>
+<label><input type="radio" name="q2" value="B"> Mauvais graphique</label><br>
+<label><input type="radio" name="q2" value="C"> Deux échelles différentes</label><br>
+ </div>
+<button onclick="checkAnswer('q2')">Valider</button>
+<p id="feedback-q2" class="feedback"></p>
+</div>
+
+<!-- Graphique 3 -->
+<div class="card">
+<h2>Répartition du budget des ménages</h2>
+<div class="subtitle">Source : Étude économique 2024</div>
+<canvas id="chart3" class="chart-canvas"></canvas>
+
+<p class="question">Quel est le problème ?</p>
+<div class="options">
+<label><input type="radio" name="q3" value="A"> Le total dépasse 100%</label><br>
+<label><input type="radio" name="q3" value="B"> Trop de catégories</label><br>
+<label><input type="radio" name="q3" value="C"> Mauvaises couleurs</label><br>
+ </div>
+<button onclick="checkAnswer('q3')">Valider</button>
+<p id="feedback-q3" class="feedback"></p>
+</div>
+
+<!-- Graphique 4 -->
+<div class="card">
+<h2>Augmentation de la fréquentation des activités périscolaires</h2>
+<div class="subtitle">Évolution 2020 - 2023</div>
+<canvas id="chart4" class="chart-canvas"></canvas>
+
+<p class="question">Pourquoi ce graphique est trompeur ?</p>
+<div class="options">
+<label><input type="radio" name="q4" value="A"> Mauvais type</label><br>
+<label><input type="radio" name="q4" value="B"> Données fausses</label><br>
+<label><input type="radio" name="q4" value="C"> Titre trompeur</label><br>
+ </div>
+<button onclick="checkAnswer('q4')">Valider</button>
+<p id="feedback-q4" class="feedback"></p>
+</div>
+
+</section>
+
+<!-- Code final -->
+<div class="result-card" id="resultCard">
+<h2>Code récupéré</h2>
+<p>Analyse terminée. Retourne sur index.html et entre ce code :</p>
+<div class="final-code">AXES</div>
+</div>
+
+</div>
+
+<script>
+const expectedAnswers = { q1: "B", q2: "C", q3: "A", q4: "C" };
+const clueLetters = { q1: "A", q2: "X", q3: "E", q4: "S" };
+const clueOrder = ["q1", "q2", "q3", "q4"];
+const solved = new Set();
+
+function updateMissionStatus() {
+        const letters = clueOrder.map((q) => solved.has(q) ? clueLetters[q] : "_");
+        document.getElementById("codeDisplay").innerText = letters.join(" ");
+        document.getElementById("progressFill").style.width = `${(solved.size / clueOrder.length) * 100}%`;
+}
+
+function checkAnswer(questionId) {
+        const selected = document.querySelector(`input[name="${questionId}"]:checked`);
+        const feedback = document.getElementById(`feedback-${questionId}`);
+
+        if (!selected) {
+                feedback.className = "feedback warn";
+                feedback.innerText = "Choisis une réponse avant de valider.";
+                return;
+        }
+
+        if (selected.value === expectedAnswers[questionId]) {
+                solved.add(questionId);
+                feedback.className = "feedback ok";
+                feedback.innerText = `Correct. Lettre obtenue : ${clueLetters[questionId]}`;
+        } else {
+                feedback.className = "feedback ko";
+                feedback.innerText = "Incorrect. Relis le graphique et ses axes.";
+        }
+
+        updateMissionStatus();
+
+        if (solved.size === clueOrder.length) {
+            document.getElementById("resultCard").classList.add("show");
+        }
+}
+
+updateMissionStatus();
+
+const chartCommonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+                legend: {
+                position: "bottom",
+                        labels: {
+                                color: "#d7dae2"
+                        }
+                }
+        },
+        scales: {
+                x: {
+                        ticks: { color: "#c7ccdb" },
+                        grid: { color: "rgba(199, 204, 219, 0.15)" }
+                },
+                y: {
+                        ticks: { color: "#c7ccdb" },
+                        grid: { color: "rgba(199, 204, 219, 0.15)" }
+                }
+        }
+};
+
+// Graphique 1 (axe tronqué)
+new Chart(document.getElementById("chart1"), {
+    type: "bar",
+    data: {
+        labels: ["2022", "2023"],
+        datasets: [{
+            label: "Prix moyen (€)",
+                        data: [29, 31],
+                        backgroundColor: ["#00ff7590", "#00ff75"]
+        }]
+    },
+    options: {
+                ...chartCommonOptions,
+        scales: {
+                        ...chartCommonOptions.scales,
+                        y: { ...chartCommonOptions.scales.y, min: 28 }
+        }
+    }
+});
+
+// Graphique 2 (double échelle)
+new Chart(document.getElementById("chart2"), {
+    type: "line",
+    data: {
+        labels: ["1h", "2h", "3h"],
+        datasets: [
+            {
+                label: "Temps sur réseaux (h)",
+                data: [1, 2, 3],
+                                yAxisID: "y",
+                                borderColor: "#00ff75",
+                                backgroundColor: "#00ff7540",
+                                borderWidth: 3,
+                                pointStyle: "circle",
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                tension: 0.3
+            },
+            {
+                label: "Note moyenne (/20)",
+                data: [10, 11, 12],
+                                yAxisID: "y1",
+                                borderColor: "#74b9ff",
+                                backgroundColor: "transparent",
+                                borderWidth: 3,
+                                borderDash: [8, 6],
+                                pointStyle: "rectRot",
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                tension: 0.3,
+                                fill: false
+            }
+        ]
+    },
+    options: {
+                ...chartCommonOptions,
+        scales: {
+                        x: chartCommonOptions.scales.x,
+                        y: {
+                                ...chartCommonOptions.scales.y,
+                                position: "left",
+                                title: { display: true, text: "Heures sur réseaux" }
+                        },
+                        y1: {
+                                ...chartCommonOptions.scales.y,
+                                type: "linear",
+                                position: "right",
+                                min: 9,
+                                max: 13,
+                                title: { display: true, text: "Note moyenne (/20)" },
+                                grid: { drawOnChartArea: false, color: "rgba(199, 204, 219, 0.15)" }
+                        }
+        }
+    }
+});
+
+// Graphique 3 (total faux)
+new Chart(document.getElementById("chart3"), {
+    type: "pie",
+    data: {
+        labels: ["Logement (50%)", "Alimentation (30%)", "Loisirs (30%)"],
+        datasets: [{
+                        label: "Budget (%)",
+                        data: [50, 30, 30],
+                        backgroundColor: ["#00ff75", "#74b9ff", "#ffd166"]
+        }]
+        },
+        options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                        legend: {
+                        position: "bottom",
+                                labels: { color: "#d7dae2" }
+                        },
+                        tooltip: {
+                                callbacks: {
+                                        label: function(context) {
+                                                return `${context.label}`;
+                                        }
+                                }
+                        }
+                }
+        }
+});
+
+// Graphique 4 (titre trompeur)
+new Chart(document.getElementById("chart4"), {
+    type: "line",
+    data: {
+        labels: ["2020", "2021", "2022", "2023"],
+        datasets: [{
+            label: "Participation aux activités périscolaires",
+                        data: [100, 102, 103, 105],
+                        borderColor: "#ff6b6b",
+                        backgroundColor: "#ff6b6b35",
+                        tension: 0.25
+        }]
+        },
+        options: chartCommonOptions
+});
+</script>
+
+</body>
+</html>

@@ -210,7 +210,7 @@
       <div class="win-top">🏆</div>
       <h2>Bravo, mission accomplie !</h2>
       <div class="win-sub">Tu as fermé les 30 pop-ups sans te faire piéger une seule fois. Le code :</div>
-      <div class="win-code">VIGILANT</div>
+      <div class="win-code">VIGILANT-2025</div>
       <div class="win-stats">
         <div class="stat-card"><div class="stat-num" id="stat-traps" style="color:#e74c3c">0</div><div class="stat-lbl">pièges évités</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-lives" style="color:#27ae60">0</div><div class="stat-lbl">vies restantes</div></div>
@@ -655,19 +655,7 @@ function trapBtn(btn){
   removePopup(btn);
   traps++;lives--;
   updateHearts();showWarning();
-  if(lives<=0){ triggerGameOver(); return; }
-  // Repart à 0 : efface tout et relance le spawn
-  setTimeout(()=>{
-    document.querySelectorAll('.popup').forEach(p=>p.remove());
-    closed=0; spawned=0; active=0;
-    document.getElementById('prog-closed').textContent='0';
-    clearInterval(spawnTimer);
-    for(let i=0;i<3;i++) setTimeout(()=>spawnOne(),i*400);
-    spawnTimer=setInterval(()=>{
-      if(!gameOver&&spawned<TOTAL) spawnOne();
-      if(spawned>=TOTAL) clearInterval(spawnTimer);
-    },SPAWN_MS);
-  },300);
+  if(lives<=0) triggerGameOver();
 }
 
 function updateHearts(){
