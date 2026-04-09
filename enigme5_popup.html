@@ -210,7 +210,7 @@
       <div class="win-top">🏆</div>
       <h2>Bravo, mission accomplie !</h2>
       <div class="win-sub">Tu as fermé les 30 pop-ups sans te faire piéger une seule fois. Le code :</div>
-      <div class="win-code">VIGILANT-2025</div>
+      <div class="win-code">VIGILANT</div>
       <div class="win-stats">
         <div class="stat-card"><div class="stat-num" id="stat-traps" style="color:#e74c3c">0</div><div class="stat-lbl">pièges évités</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-lives" style="color:#27ae60">0</div><div class="stat-lbl">vies restantes</div></div>
@@ -228,7 +228,7 @@
 </div>
 
 <script>
-const TOTAL=30,MAX_LIVES=3,SPAWN_MS=1400;
+const TOTAL=100,MAX_LIVES=3,SPAWN_MS=1400;
 
 let lives=MAX_LIVES,closed=0,traps=0,spawned=0,active=0,gameOver=false;
 let spawnTimer=null;
@@ -647,7 +647,7 @@ function goodBtn(btn){
   removePopup(btn);
   closed++;
   document.getElementById('prog-closed').textContent=closed;
-  if(closed>=TOTAL) winGame();
+  if(closed>=30) winGame();
 }
 
 function trapBtn(btn){
